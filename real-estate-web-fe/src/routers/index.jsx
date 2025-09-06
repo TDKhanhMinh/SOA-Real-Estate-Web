@@ -19,6 +19,7 @@ import Dashboard from "../pages/Admin/DashBoard";
 import Users from "../pages/Admin/Users";
 import Listings from "../pages/Admin/Listings";
 import Payments from "../pages/Admin/Payments";
+import MembershipManagement from "../pages/Admin/Membership";
 
 
 const publicRoutes = createBrowserRouter([
@@ -85,6 +86,9 @@ const publicRoutes = createBrowserRouter([
             },
             {
                 path: 'payments', element: <Payments />
+            },
+            {
+                path: 'memberships', element: <MembershipManagement/>
             },
 
 

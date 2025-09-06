@@ -2,9 +2,8 @@ import Button from "../Button";
 import avatar from "../../assets/img/avatar.jpg";
 import DropDownMenu from "../DropDownMenu";
 import { ACCOUNT_ITEMS } from "../../assets/js/account-items";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FaChevronDown } from "react-icons/fa";
-import { faCircleUser } from "@fortawesome/free-regular-svg-icons";
+import { useState } from "react";
 
 const navItems = [
   { to: "/sale/all-sale", title: "Nhà đất bán" },
@@ -19,11 +18,9 @@ const navItems = [
 
 export default function Header() {
   const isLogin = true
+  const [imgUrl, setImgUrl] = useState("")
   return (
-
-
-
-    <header className="h-20 w-full fixed z-50 bg-white flex items-center justify-between shadow-lg">     
+    <header className="h-20 w-full fixed z-50 bg-white flex items-center justify-between shadow-lg">
       <div className="flex items-center ml-4">
         <Button to="/" className="p-0">
           <img src={avatar} alt="logo" className="w-12 h-12 rounded-full" />
@@ -63,7 +60,9 @@ export default function Header() {
               (
                 <DropDownMenu items={ACCOUNT_ITEMS} className={"flex flex-col"} classNameBtn={"text-sm text-gray-950  lowercase font-normal capitalize hover:text-green-700"}>
                   <div className="flex items-center">
-                    <FontAwesomeIcon icon={faCircleUser} className="h-6 w-6 mx-2 " />
+                    <div>
+                      <img src={imgUrl || "https://th.bing.com/th/id/R.e764fc1c705687a6f4770ac6ead4a955?rik=Ik0ulhYQHntUPg&pid=ImgRaw&r=0"} alt="avatar" className="w-14 h-10 rounded-full" />
+                    </div>
                     Minh
                     <FaChevronDown className="mx-2" />
                   </div>
