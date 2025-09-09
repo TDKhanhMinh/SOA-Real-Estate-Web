@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: api-gateway
+
+  ##GATEWAY CONFIGURATIONS
+
+  cloud:
+    gateway:
+      routes:
+        ## service1
+        - id: ListingService
+          uri: lb://ListingService
+          predicates:
+            - Path=/ListingService/**
+          filters:
+            - StripPrefix=1
+
+        ## Service2
+        - id: PaymentService
+          uri: lb://PaymentService
+          predicates:
+            - Path=/PaymentService/**
+          filters:
+            - StripPrefix=1
+        ## Service3
+        - id: RentalService
+          uri: lb://RentalService
+          predicates:
+            - Path=/RentalService/**
+          filters:
+            - StripPrefix=1
+        ## Service4
+        - id: SalesService
+          uri: lb://SalesService
+          predicates:
+            - Path=/SalesService/**
+          filters:
+            - StripPrefix=1
+        ## Service5
+        - id: SecurityService
+          uri: lb://SecurityService
+          predicates:
+            - Path=/SecurityService/**
+          filters:
+            - StripPrefix=1
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka

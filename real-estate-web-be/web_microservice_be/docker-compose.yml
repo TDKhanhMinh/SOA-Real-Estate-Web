@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # Database MySQL
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3307:3306"   # Host: 3307, Container: 3306
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - microservice-network
+    command: >
+      bash -c "
+      docker-entrypoint.sh mysqld &
+      sleep 30 &&
+      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS security_db;' &&
+      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS payment_db;' &&
+      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS listing_db;' &&
+      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS sales_db;' &&
+      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS rental_db;'
+      "
+
+  # Discovery Service (Eureka)
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - microservice-network
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery-service
+    networks:
+      - microservice-network
+
+  # Security Service
+  security-service:
+    build: ./security-service
+    container_name: security-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/security_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    depends_on:
+      - db
+      - discovery-service
+    networks:
+      - microservice-network
+
+  # Sales Service
+  sales-service:
+    build: ./sales-service
+    container_name: sales-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/sales_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    depends_on:
+      - db
+      - discovery-service
+    networks:
+      - microservice-network
+
+  # Rental Service
+  rental-service:
+    build: ./rental-service
+    container_name: rental-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/rental_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    depends_on:
+      - db
+      - discovery-service
+    networks:
+      - microservice-network
+
+  # Payment Service
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/payment_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    depends_on:
+      - db
+      - discovery-service
+    networks:
+      - microservice-network
+
+  # Listing Service
+  listing-service:
+    build: ./listing-service
+    container_name: listing-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/listing_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    depends_on:
+      - db
+      - discovery-service
+    networks:
+      - microservice-network
+
+# Mạng và volumes
+networks:
+  microservice-network:
+    driver: bridge
+
+volumes:
+  db_data:
