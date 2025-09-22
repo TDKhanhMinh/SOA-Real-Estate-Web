@@ -2,11 +2,9 @@ package com.example.SecurityService.controller;
 
 import com.example.SecurityService.dto.request.UserRequest;
 import com.example.SecurityService.dto.request.UserUpdate;
-
 import com.example.SecurityService.dto.restponse.ApiResponse;
 import com.example.SecurityService.dto.restponse.UserResponse;
-import com.example.SecurityService.entity.User;
-import com.example.SecurityService.serviceimplement.UserServiceImpl;
+import com.example.SecurityService.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,38 +15,53 @@ import java.util.List;
 @RequestMapping("/api/auth")
 public class UserController {
     @Autowired
-    private UserServiceImpl userService;
+    private final UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/all")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ApiResponse<List<UserResponse>> getAllUsers() {
+        return ApiResponse.<List<UserResponse>>builder()
+                .statusCode(200)
+                .message("Success")
+                .data(userService.getAllUsers())
+                .build();
     }
 
     @GetMapping("/{id}")
-    public User getById(@PathVariable("id") int id) {
-        return userService.getUserById(id);
+    public ApiResponse<UserResponse> getById(@PathVariable int id) {
+        return ApiResponse.<UserResponse>builder()
+                .statusCode(200)
+                .message("Success")
+                .data(userService.getUserById(id))
+                .build();
     }
 
     @PostMapping("/create")
-    public ApiResponse<User> createUser(@Validated @RequestBody UserRequest userRequest) {
-        ApiResponse<User> response = new ApiResponse<>();
-        response.setStatusCode(500);
-        response.setMessage("Success to create user");
-        response.setData(userService.createUser(userRequest));
-        return response;
+    public ApiResponse<UserResponse> createUser(@Validated @RequestBody UserRequest userRequest) {
+        return ApiResponse.<UserResponse>builder()
+                .statusCode(201)
+                .message("User created successfully")
+                .data(userService.createUser(userRequest))
+                .build();
     }
 
     @PutMapping("/update/{id}")
-    public UserResponse updateUser(@RequestBody UserUpdate userUpdate, @PathVariable("id") int id) {
-        return userService.updateUser(userUpdate, id);
+    public ApiResponse<UserResponse> updateUser(@RequestBody UserUpdate userUpdate, @PathVariable int id) {
+        return ApiResponse.<UserResponse>builder()
+                .statusCode(200)
+                .message("User updated successfully")
+                .data(userService.updateUser(userUpdate, id))
+                .build();
     }
 
     @DeleteMapping("/delete/{id}")
-    public void deleteUser(@PathVariable int id) {
-        User user = userService.getUserById(id);
-        if (user == null) {
-            throw new RuntimeException("User not found to delete");
-        }
+    public ApiResponse<Void> deleteUser(@PathVariable int id) {
         userService.deleteById(id);
+        return ApiResponse.<Void>builder()
+                .statusCode(200)
+                .message("User deleted successfully")
+                .build();
     }
 }

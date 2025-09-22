@@ -11,7 +11,6 @@
         <module name="RentalService" />
         <module name="SalesService" />
         <module name="SecurityService" />
-        <module name="DiscoveryService" />
         <module name="PaymentService" />
         <module name="API-GateWay" />
       </profile>
@@ -20,6 +19,7 @@
       <module name="API-Gateway" target="17" />
       <module name="API-gateway" target="17" />
       <module name="api-gateway" target="17" />
+      <module name="DiscoveryService" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

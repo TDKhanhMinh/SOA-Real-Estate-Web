@@ -1,11 +1,5 @@
 spring:
   application:
-    name: SalesService
-
+    name: sales-service
 server:
   port: 8084
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}

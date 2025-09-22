@@ -1,11 +1,6 @@
 spring:
   application:
-    name: ListingService
+    name: listing-service
 
 server:
   port: 8081
-
-eureka:
-  client:
-    service-url:
-      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}

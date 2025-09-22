@@ -6,30 +6,13 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
     ports:
-      - "3311:3306"   # Host 3311 -> Container 3306
+      - "3311:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - microservice-network
-    command: >
-      bash -c "
-      docker-entrypoint.sh mysqld &
-      sleep 30 &&
-      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS security_db;' &&
-      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS payment_db;' &&
-      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS listing_db;' &&
-      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS sales_db;' &&
-      mysql -uroot -prootpassword -e 'CREATE DATABASE IF NOT EXISTS rental_db;'
-      "
 
-  # Discovery Service (Eureka)
-  discovery-service:
-    build: ./DiscoveryService
-    container_name: discovery-service
-    ports:
-      - "8761:8761"
-    networks:
-      - microservice-network
 
   # API Gateway
   api-gateway:
@@ -37,10 +20,12 @@ services:
     container_name: api-gateway
     ports:
       - "8080:8080"
-    environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
-      - discovery-service
+      - listing-service
+      - payment-service
+      - rental-service
+      - sales-service
+      - security-service
     networks:
       - microservice-network
 
@@ -49,28 +34,26 @@ services:
     build: ./SecurityService
     container_name: security-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/security_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_security_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
       - db
-      - discovery-service
     networks:
       - microservice-network
+    ports:
+      - "8085:8085"
 
   # Sales Service
   sales-service:
     build: ./SalesService
     container_name: sales-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/sales_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_sales_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
       - db
-      - discovery-service
     networks:
       - microservice-network
 
@@ -79,13 +62,11 @@ services:
     build: ./RentalService
     container_name: rental-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/rental_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_rental_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
       - db
-      - discovery-service
     networks:
       - microservice-network
 
@@ -94,13 +75,11 @@ services:
     build: ./PaymentService
     container_name: payment-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/payment_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_payment_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
       - db
-      - discovery-service
     networks:
       - microservice-network
 
@@ -109,13 +88,11 @@ services:
     build: ./ListingService
     container_name: listing-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/listing_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_listing_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     depends_on:
       - db
-      - discovery-service
     networks:
       - microservice-network
 

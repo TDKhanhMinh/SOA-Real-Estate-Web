@@ -10,15 +10,13 @@ import java.util.List;
 
 @Service
 public interface UserService {
-    List<User> getAllUsers();
+    List<UserResponse> getAllUsers();
 
-    User getUserById(int id);
-
-
+    UserResponse getUserById(int id);
 
     void deleteById(int id);
 
-    User createUser(UserRequest userRequest);
+    UserResponse createUser(UserRequest userRequest);
 
     UserResponse updateUser(UserUpdate userUpdate, int id);
 }

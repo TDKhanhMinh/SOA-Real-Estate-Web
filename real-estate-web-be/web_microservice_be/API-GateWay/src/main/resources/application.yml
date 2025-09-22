@@ -2,52 +2,43 @@ spring:
   application:
     name: api-gateway
 
-  ##GATEWAY CONFIGURATIONS
-
   cloud:
     gateway:
       routes:
-        ## service1
-        - id: ListingService
-          uri: lb://ListingService
+        - id: listing-service
+          uri: http://listing-service:8081
           predicates:
-            - Path=/ListingService/**
+            - Path=/listing/**
           filters:
             - StripPrefix=1
 
-        ## Service2
-        - id: PaymentService
-          uri: lb://PaymentService
+        - id: payment-service
+          uri: http://payment-service:8082
           predicates:
-            - Path=/PaymentService/**
+            - Path=/payment/**
           filters:
             - StripPrefix=1
-        ## Service3
-        - id: RentalService
-          uri: lb://RentalService
+
+        - id: rental-service
+          uri: http://rental-service:8083
           predicates:
-            - Path=/RentalService/**
+            - Path=/rental/**
           filters:
             - StripPrefix=1
-        ## Service4
-        - id: SalesService
-          uri: lb://SalesService
+
+        - id: sales-service
+          uri: http://sales-service:8084
           predicates:
-            - Path=/SalesService/**
+            - Path=/sales/**
           filters:
             - StripPrefix=1
-        ## Service5
-        - id: SecurityService
-          uri: lb://SecurityService
+
+        - id: security-service
+          uri: http://security-service:8085
           predicates:
-            - Path=/SecurityService/**
+            - Path=/security/**
           filters:
             - StripPrefix=1
 
 server:
   port: 8080
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
