@@ -1,11 +1,16 @@
 package com.example.SecurityService.controller;
 
+import com.example.SecurityService.config.JwtUtil;
+import com.example.SecurityService.dto.request.LoginRequest;
 import com.example.SecurityService.dto.request.UserRequest;
 import com.example.SecurityService.dto.request.UserUpdate;
 import com.example.SecurityService.dto.restponse.ApiResponse;
 import com.example.SecurityService.dto.restponse.UserResponse;
 import com.example.SecurityService.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,8 +21,16 @@ import java.util.List;
 public class UserController {
     @Autowired
     private final UserService userService;
-    public UserController(UserService userService) {
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authManager;
+    public UserController(UserService userService, JwtUtil jwtUtil, AuthenticationManager authManager) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
+        this.authManager = authManager;
+    }
+    @GetMapping("/test/hello")
+    public String hello() {
+        return "Hello, secured world!";
     }
 
     @GetMapping("/all")
@@ -64,4 +77,13 @@ public class UserController {
                 .message("User deleted successfully")
                 .build();
     }
+
+    @PostMapping("/login")
+    public String login(@RequestBody LoginRequest request) {
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+        return jwtUtil.generateToken(authentication.getName());
+    }
+
 }
