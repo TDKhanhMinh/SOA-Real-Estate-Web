@@ -1,29 +1,38 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TextInput from "./../components/TextInput";
 import Button from "../components/Button";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { useAuth } from "../hooks/useAuth";
 
-const schema = yup.object().shape({
-  username: yup
-    .string()
-    .email("Email không hợp lệ")
-    .required("Vui lòng nhập email"),
-  password: yup.string().required("Vui lòng nhập mật khẩu"),
-});
 
 export default function Login() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
+  const { login} = useAuth();
+  const [form, setForm] = useState({ username: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate()
 
-  const onSubmit = (data) => {
-    console.log("Login data:", data);
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.username) newErrors.username = "Tài khoản không được để trống";
+
+    if (!form.password) newErrors.password = "Mật khẩu không được để trống";
+    return newErrors;
+  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Login data:", form);
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
+    await login(form.username, form.password)
+    console.log("Login success with data:", form);
+    navigate("/");
+
+    toast.success("Đăng nhập thành công!")
   };
 
   return (
@@ -51,19 +60,18 @@ export default function Login() {
             <strong>Login</strong>
           </h3>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <TextInput
                 type="email"
                 label="Email address"
                 id="username"
-                name="username"
-                {...register("username")}
+                onChange={(e) => { setForm({ ...form, username: e.target.value }) }}
                 className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               {errors.username && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.username.message}
+                  {errors.username}
                 </p>
               )}
             </div>
@@ -73,13 +81,12 @@ export default function Login() {
                 type="password"
                 label="Password"
                 id="password"
-                name="password"
-                {...register("password")}
+                onChange={(e) => { setForm({ ...form, password: e.target.value }) }}
                 className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.password.message}
+                  {errors.password}
                 </p>
               )}
             </div>

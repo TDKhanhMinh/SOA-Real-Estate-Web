@@ -4,6 +4,7 @@ import DropDownMenu from "../DropDownMenu";
 import { ACCOUNT_ITEMS } from "../../assets/js/account-items";
 import { FaChevronDown } from "react-icons/fa";
 import { useState } from "react";
+import { getToken, getUser } from "../../utils/auth";
 
 const navItems = [
   { to: "/sale/all-sale", title: "Nhà đất bán" },
@@ -17,7 +18,7 @@ const navItems = [
 ];
 
 export default function Header() {
-  const isLogin = true
+  const isLogin = getToken() ? true : false
   const [imgUrl, setImgUrl] = useState("")
   return (
     <header className="h-20 w-full fixed z-50 bg-white flex items-center justify-between shadow-lg">

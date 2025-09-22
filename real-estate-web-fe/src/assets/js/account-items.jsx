@@ -30,7 +30,7 @@ export const ACCOUNT_ITEMS = [
   {
     title: "Thay đổi mật khẩu",
     icon: <FontAwesomeIcon icon={faKey} style={{ color: "#9333ea" }} />,
-    to: "/change-password",
+    to: "/account/change-password",
   },
   {
     title: "Nạp tiền",
@@ -47,6 +47,5 @@ export const ACCOUNT_ITEMS = [
     icon: (
       <FontAwesomeIcon icon={faArrowRightFromBracket} style={{ color: "#64748b" }} />
     ),
-    to: "/",
   },
 ];

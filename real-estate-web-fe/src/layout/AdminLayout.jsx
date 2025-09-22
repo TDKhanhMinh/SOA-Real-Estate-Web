@@ -11,6 +11,7 @@ import { CiLogout } from "react-icons/ci";
 import Button from './../components/Button';
 import { MdPayment } from "react-icons/md";
 import { LuCrown } from "react-icons/lu";
+import { ToastContainer } from "react-toastify";
 
 function AdminLayout() {
     const [open, setOpen] = useState(true);
@@ -88,6 +89,16 @@ function AdminLayout() {
 
                 {/* Nội dung page con */}
                 <div className="flex-1 p-6 overflow-y-auto">
+                    <ToastContainer
+                        position="top-right"
+                        autoClose={3000}
+                        hideProgressBar={false}
+                        newestOnTop={true}
+                        closeOnClick
+                        pauseOnHover
+                        draggable
+                        theme="colored"      
+                    />
                     <Outlet />
                 </div>
             </div>

@@ -1,7 +1,16 @@
 import Tippy from "@tippyjs/react/headless";
 import Button from "./Button";
-
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 function DropDownMenu({ className, classNameBtn, children, items = [], ...passProps }) {
+    const navigate = useNavigate()
+    const { logout } = useAuth();
+
+    const handlerLogout = async () => {
+        navigate("/login");
+        console.log("User had been logout");
+        logout();
+    }
     return (
         <Tippy
             hideOnClick={true}
@@ -15,8 +24,9 @@ function DropDownMenu({ className, classNameBtn, children, items = [], ...passPr
                         {
                             items.map((childrenItem, index) => (
                                 <li key={index} className="text-green-700 mr-6">
-                                    <Button className={`block w-full bg-white font-bold text-base text-green-700 w-full hover:bg-white uppercase ${classNameBtn}`} icon={childrenItem.icon} title={childrenItem.brand || childrenItem.title} to={childrenItem.to} />
-                                    {childrenItem.data?.length > 0 &&
+                                    <Button className={`block w-full bg-white font-bold text-base text-green-700 w-full hover:bg-white uppercase ${classNameBtn}`} icon={childrenItem.icon} title={childrenItem.brand || childrenItem.title} to={childrenItem.to} onClick={() => childrenItem.title === "Đăng xuất" ? handlerLogout() : null} />
+                                    {
+                                        childrenItem.data?.length > 0 &&
                                         childrenItem.data.map((item, itemIndex) => (
                                             <Button key={itemIndex} className="block max-w-56 w-full my-1 bg-white font-normal text-sm text-black w-full hover:bg-green-700 hover:text-white" title={item.name} to={item.to} />
                                         ))

@@ -32,7 +32,7 @@ export default function ChangePassword() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-200 to-blue-800 px-4">
+        <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-r from-purple-200 to-blue-800 px-4">
             <div className="max-w-4xl w-full bg-white/10 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden">
                 <div className="grid md:grid-cols-2">
                     <div

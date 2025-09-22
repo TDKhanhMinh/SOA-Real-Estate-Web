@@ -20,6 +20,7 @@ import Users from "../pages/Admin/Users";
 import Listings from "../pages/Admin/Listings";
 import Payments from "../pages/Admin/Payments";
 import MembershipManagement from "../pages/Admin/Membership";
+import AuthLayout from "../layout/AuthLayout";
 
 
 const publicRoutes = createBrowserRouter([
@@ -29,24 +30,14 @@ const publicRoutes = createBrowserRouter([
             {
                 path: '/', element: <Home />
             },
-            {
-                path: '/login', element: <Login />
-            },
-            {
-                path: '/register', element: <Register />
-            },
+
             {
                 path: '/post', element: <Post />
             },
             {
                 path: '/info/:id?', element: <ListingInfo />
             },
-            {
-                path: '/forgot-password', element: <ForgotPassword />
-            },
-            {
-                path: '/change-password', element: <ChangePassword />
-            },
+
             {
                 path: '/search-result', element: <SearchResult />
             },
@@ -56,6 +47,9 @@ const publicRoutes = createBrowserRouter([
         element: <AccountLayout />,
         path: '/account',
         children: [
+            {
+                path: 'change-password', element: <ChangePassword />
+            },
             {
                 path: 'listing', element: <UserListing />
             },
@@ -88,7 +82,22 @@ const publicRoutes = createBrowserRouter([
                 path: 'payments', element: <Payments />
             },
             {
-                path: 'memberships', element: <MembershipManagement/>
+                path: 'memberships', element: <MembershipManagement />
+            },
+
+
+        ],
+    }, {
+        element: <AuthLayout />,
+        children: [
+            {
+                path: '/login', element: <Login />
+            },
+            {
+                path: '/register', element: <Register />
+            },
+            {
+                path: '/forgot-password', element: <ForgotPassword />
             },
 
 

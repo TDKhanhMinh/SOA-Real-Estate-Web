@@ -1,37 +1,49 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TextInput from "../components/TextInput";
 import Button from "../components/Button";
+import { authService } from "../services/authService";
+import { toast } from "react-toastify";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    fullName: "",
+    userName: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
+    role: "USER"
   });
   const [error, setError] = useState({});
-  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let errs = {};
-    if (!formData.fullName) errs.fullName = "Full name is required";
+    if (!formData.userName) errs.userName = "Full name is required";
     if (!formData.email) errs.email = "Email is required";
-    if (!formData.phone) errs.phone = "Phone is required";
     if (!formData.password) errs.password = "Password is required";
     if (formData.password !== formData.confirmPassword)
       errs.confirmPassword = "Passwords do not match";
 
     setError(errs);
     if (Object.keys(errs).length === 0) {
-      setSuccess("Registration successful!");
-      console.log("Form submitted:", formData);
+      try {
+        await authService.register(
+          formData.userName,
+          formData.password,
+          formData.email,
+          formData.role
+        );
+        toast.success("Đăng ký thành công!");
+        navigate("/login");
+      } catch (error) {
+        toast.error(error.message); // Sẽ hiển thị "User already exists" nếu BE trả về
+      }
+
     }
   };
 
@@ -48,12 +60,7 @@ export default function Register() {
           Create an account
         </h3>
 
-        {/* Success / Error messages */}
-        {success && (
-          <div className="bg-green-100 text-green-700 p-2 rounded-full text-center mb-4">
-            {success}
-          </div>
-        )}
+        
         {Object.keys(error).length > 0 && (
           <div className="bg-red-100 text-red-700 p-2 rounded-full text-center mb-4">
             Please fill all fields
@@ -68,13 +75,13 @@ export default function Register() {
             </label>
             <TextInput
               type="text"
-              name="fullName"
-              value={formData.fullName}
+              name="userName"
+              value={formData.userName}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
             />
-            {error.fullName && (
-              <p className="text-red-500 text-sm">{error.fullName}</p>
+            {error.userName && (
+              <p className="text-red-500 text-sm">{error.userName}</p>
             )}
           </div>
 
@@ -95,20 +102,6 @@ export default function Register() {
             )}
           </div>
 
-          {/* Phone */}
-          <div>
-            <label className="block text-gray-700 mb-1 font-medium">Phone</label>
-            <TextInput
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
-            />
-            {error.phone && (
-              <p className="text-red-500 text-sm">{error.phone}</p>
-            )}
-          </div>
 
           {/* Password */}
           <div>
