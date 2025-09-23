@@ -83,7 +83,7 @@ public class UserController {
 
     @PostMapping("/login")
     public String login(@RequestBody LoginRequest request) {
-        log.warn("Data sending from FE",request);
+        log.warn("Data sending from FE" + request);
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
