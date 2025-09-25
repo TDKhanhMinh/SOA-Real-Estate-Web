@@ -41,7 +41,7 @@ export default function Register() {
         toast.success("Đăng ký thành công!");
         navigate("/login");
       } catch (error) {
-        toast.error(error.message); // Sẽ hiển thị "User already exists" nếu BE trả về
+        toast.error(error.message);
       }
 
     }
@@ -68,7 +68,6 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full Name */}
           <div>
             <label className="block text-gray-700 mb-1 font-medium">
               Your Full Name
@@ -85,7 +84,6 @@ export default function Register() {
             )}
           </div>
 
-          {/* Email */}
           <div>
             <label className="block text-gray-700 mb-1 font-medium">
               Your Email
@@ -103,7 +101,6 @@ export default function Register() {
           </div>
 
 
-          {/* Password */}
           <div>
             <label className="block text-gray-700 mb-1 font-medium">
               Password
@@ -120,7 +117,6 @@ export default function Register() {
             )}
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block text-gray-700 mb-1 font-medium">
               Repeat your password
