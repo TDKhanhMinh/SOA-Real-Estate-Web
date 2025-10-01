@@ -6,7 +6,7 @@ spring:
     gateway:
       routes:
         - id: listing-service
-          uri: http://listing-service:8081
+          uri: http://localhost:8081
           predicates:
             - Path=/listing/**
           filters:
@@ -14,7 +14,7 @@ spring:
             - JwtAuthenticationFilter
 
         - id: payment-service
-          uri: http://payment-service:8082
+          uri: http://localhost:8082
           predicates:
             - Path=/payment/**
           filters:
@@ -22,7 +22,7 @@ spring:
             - JwtAuthenticationFilter
 
         - id: rental-service
-          uri: http://rental-service:8083
+          uri: http://localhost:8083
           predicates:
             - Path=/rental/**
           filters:
@@ -30,7 +30,7 @@ spring:
             - JwtAuthenticationFilter
 
         - id: sales-service
-          uri: http://sales-service:8084
+          uri: http://localhost:8084
           predicates:
             - Path=/sales/**
           filters:
@@ -38,7 +38,7 @@ spring:
             - JwtAuthenticationFilter
 
         - id: security-service
-          uri: http://security-service:8085
+          uri: http://localhost:8085
           predicates:
             - Path=/security/**
           filters:
