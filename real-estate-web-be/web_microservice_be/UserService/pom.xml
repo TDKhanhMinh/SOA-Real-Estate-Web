@@ -11,8 +11,8 @@
     <groupId>com.example</groupId>
     <artifactId>UserService</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>SecurityService</name>
-    <description>Listing service</description>
+    <name>UserService</name>
+    <description>User service</description>
     <url/>
     <licenses>
         <license/>

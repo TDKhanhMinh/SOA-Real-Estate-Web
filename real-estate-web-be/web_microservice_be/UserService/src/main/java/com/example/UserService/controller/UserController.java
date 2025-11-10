@@ -1,23 +1,26 @@
 package com.example.UserService.controller;
 
 import com.example.UserService.exception.AppException;
-import com.example.UserService.request.LoginRequest;
-import com.example.UserService.request.RegisterRequest;
-import com.example.UserService.request.UserUpdate;
+import com.example.UserService.request.*;
 import com.example.UserService.response.ApiResponse;
+import com.example.UserService.response.PageResponse;
 import com.example.UserService.response.UserResponse;
 import com.example.UserService.model.User;
 import com.example.UserService.service.UserService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import com.example.UserService.dto.UserDTO;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -29,24 +32,6 @@ public class UserController {
     @GetMapping("/test/hello")
     public String hello() {
         return "Hello, secured world!";
-    }
-
-    @GetMapping("/all")
-    public ApiResponse<List<UserResponse>> getAllUsers() {
-        return ApiResponse.<List<UserResponse>>builder()
-                .statusCode(200)
-                .message("Success")
-                .data(userService.getAllUsers())
-                .build();
-    }
-
-    @GetMapping("/{id}")
-    public ApiResponse<UserResponse> getById(@PathVariable Long id) {
-        return ApiResponse.<UserResponse>builder()
-                .statusCode(200)
-                .message("Success")
-                .data(userService.getUserById(id))
-                .build();
     }
 
     @PostMapping("/register")
@@ -68,24 +53,6 @@ public class UserController {
         }
     }
 
-    @PutMapping("/update/{id}")
-    public ApiResponse<UserResponse> updateUser(@RequestBody UserUpdate userUpdate, @PathVariable Long id) {
-        return ApiResponse.<UserResponse>builder()
-                .statusCode(200)
-                .message("User updated successfully")
-                .data(userService.updateUser(userUpdate, id))
-                .build();
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ApiResponse<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteById(id);
-        return ApiResponse.<Void>builder()
-                .statusCode(200)
-                .message("User deleted successfully")
-                .build();
-    }
-
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
         try {
@@ -98,6 +65,126 @@ public class UserController {
             log.error("Error during login", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse(HttpStatus.BAD_REQUEST.value(), "Invalid email or password", null));
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/")
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        try{
+            PageResponse<UserResponse> users = userService.getAllUsers(pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get list users success", users));
+        }catch (AppException e){
+            log.error("Error fetching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(@RequestParam(required = false) String keyword,
+                                                                       @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
+                                                                       Pageable pageable) {
+        try{
+            PageResponse<UserResponse> users = userService.searchUsers(keyword, pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Search users success", users));
+        }catch (AppException e){
+            log.error("Error searching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
+        try{
+            UserResponse user = userService.getUserById(id);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get user success", user));
+        }catch (AppException e){
+            log.error("Error fetching user by ID", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<UserDTO>> getProfile(@AuthenticationPrincipal String userIdStr) {
+        try{
+            Long id;
+            try {
+                id = Long.parseLong(userIdStr);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid user ID", null));
+            }
+
+            UserDTO user = userService.getUserProfile(id);
+
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get profile success", user));
+        }catch (AppException e){
+            log.error("Error fetching profile", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@Validated @RequestBody UpdateRequest updateRequest,
+                                                                @PathVariable Long id) {
+        try{
+            UserResponse updatedUser = userService.updateUser(updateRequest, id);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Update user success", updatedUser));
+        }catch (AppException e){
+            log.error("Error updating user", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<UserDTO>> updateProfile(@Validated @RequestBody UpdateProfileRequest updateProfileRequest,
+                                                                @AuthenticationPrincipal String userIdStr) {
+        try{
+            Long id;
+            try {
+                id = Long.parseLong(userIdStr);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid user ID", null));
+            }
+
+            UserDTO updatedUser = userService.updateProfile(updateProfileRequest, id);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Update profile success", updatedUser));
+        }catch (AppException e){
+            log.error("Error updating profile", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
+                                                            @AuthenticationPrincipal String userIdStr) {
+        try{
+            Long id;
+            try {
+                id = Long.parseLong(userIdStr);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid user ID", null));
+            }
+            userService.changePassword(id, changePasswordRequest);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Change password success", null));
+        }catch (AppException e) {
+            log.error("Error changing password", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         }
     }
 }

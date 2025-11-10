@@ -31,7 +31,7 @@ services:
       - listing-service
       - payment-service
       - rental-service
-      - sales-service
+      - email-service
       - user-service
     networks:
       - microservice-network
@@ -42,7 +42,7 @@ services:
     build: ./UserService
     container_name: user-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_security_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_user_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
@@ -52,11 +52,11 @@ services:
     restart: unless-stopped
 
   # Sales Service
-  sales-service:
-    build: ./SalesService
-    container_name: sales-service
+  email-service:
+    build: ./EmailService
+    container_name: email-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_sales_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_email_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:

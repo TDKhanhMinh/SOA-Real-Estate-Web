@@ -1,6 +1,6 @@
-package com.example.SalesService.repository;
+package com.example.EmailService.repository;
 
-import com.example.SalesService.entity.SalesTransaction;
+import com.example.EmailService.entity.SalesTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SalesRepo extends JpaRepository<SalesTransaction, Integer> {

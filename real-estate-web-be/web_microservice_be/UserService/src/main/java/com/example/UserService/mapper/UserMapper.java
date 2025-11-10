@@ -14,8 +14,12 @@ public interface UserMapper {
         if (user == null) return null;
         return UserResponse.builder()
                 .id(user.getId())
-                .userName(user.getName())
+                .name(user.getName())
                 .email(user.getEmail())
+                .isActive(user.getIsActive())
+                .phone(user.getPhone())
+                .avatarUrl(user.getAvatarUrl())
+                .createdAt(user.getCreatedAt())
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .build();
     }
@@ -31,25 +35,6 @@ public interface UserMapper {
                 .avatarUrl(user.getAvatarUrl())
                 .build();
     }
-
-//    // Request -> Entity
-//    default User toUser(RegisterRequest req) {
-//        User user = new User();
-//        user.setName(req.getUserName());
-//        user.setEmail(req.getEmail());
-//        user.setPassword(req.getPassword());
-//
-//        if (req.getRole() != null) {
-//            user.setRole(User.Role.valueOf(req.getRole().toUpperCase()));
-//        } else {
-//            user.setRole(User.Role.USER);
-//        }
-//
-//        return user;
-//    }
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateUser(@MappingTarget User user, UserUpdate userUpdate);
 
     default User.Role mapRole(String role) {
         return role != null ? User.Role.valueOf(role.toUpperCase()) : null;

@@ -7,18 +7,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class RegisterRequest {
+@NoArgsConstructor
+public class UpdateProfileRequest {
     @Size(min = 3, message = "NAME_INVALID")
     private String name;
+    @Size(min = 10, max = 10, message = "PHONE_INVALID")
+    private String phone;
+    private String avatarUrl;
     @Email(message = "EMAIL_INVALID")
     @Size(max = 100, message = "EMAIL_TOO_LONG")
     private String email;
-    @Size(min = 8, max = 20, message = "PASSWORD_INVALID")
-    private String password;
-    @Size(min = 10, max = 10, message = "PHONE_INVALID")
-    private String phone;
 }

@@ -15,7 +15,10 @@ public enum ErrorCode {
     USER_EXIST(1001, "User already exists"),
     ADMIN_ALREADY_EXISTS(1003, "Admin already exists"),
     PASSWORD_NOT_MATCH(1003, "Password not match"),
-    USER_NOT_FOUND(1002, "User not found");
+    USER_NOT_FOUND(1002, "User not found"),
+    INVALID_OLD_PASSWORD(1005, "Invalid old password"),
+    USER_INACTIVE(1004, "User is inactive");
+
     private final int code;
     private final String message;
 

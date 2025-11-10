@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = "com.example.UserService")
-public class SecurityServiceApplication {
+public class UserServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SecurityServiceApplication.class, args);
+		SpringApplication.run(UserServiceApplication.class, args);
 	}
 }
