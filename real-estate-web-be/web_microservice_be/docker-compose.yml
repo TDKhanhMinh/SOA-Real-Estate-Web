@@ -32,15 +32,15 @@ services:
       - payment-service
       - rental-service
       - sales-service
-      - security-service
+      - user-service
     networks:
       - microservice-network
     restart: unless-stopped
 
-  # Security Service
-  security-service:
-    build: ./SecurityService
-    container_name: security-service
+  # User Service
+  user-service:
+    build: ./UserService
+    container_name: user-service
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_security_db
       SPRING_DATASOURCE_USERNAME: root
@@ -49,8 +49,6 @@ services:
       - db
     networks:
       - microservice-network
-    ports:
-      - "8085:8085"
     restart: unless-stopped
 
   # Sales Service

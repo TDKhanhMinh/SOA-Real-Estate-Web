@@ -37,9 +37,9 @@ spring:
             - StripPrefix=1
             - JwtAuthenticationFilter
 
-        - id: security-service
-          uri: http://localhost:8085
+        - id: user-service
+          uri: http://user-service:8085
           predicates:
-            - Path=/security/**
+            - Path=/user/**
           filters:
-            - StripPrefix=1
+            - JwtAuthenticationFilter
