@@ -47,11 +47,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - db
+      - rabbitmq
     networks:
       - microservice-network
     restart: unless-stopped
 
-  # Sales Service
+  # Email Service
   email-service:
     build: ./EmailService
     container_name: email-service
@@ -61,10 +62,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - db
+      - rabbitmq
     networks:
       - microservice-network
-    ports:
-      - "8084:8084"
     restart: unless-stopped
 
   # Rental Service
@@ -77,6 +77,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - db
+      - rabbitmq
     networks:
       - microservice-network
     ports:
@@ -93,6 +94,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - db
+      - rabbitmq
     networks:
       - microservice-network
     ports:
@@ -109,11 +111,26 @@ services:
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
       - db
+      - rabbitmq
     networks:
       - microservice-network
     ports:
       - "8081:8081"
     restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # cổng AMQP (service-to-service)
+      - "15672:15672" # cổng giao diện web quản lý
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - microservice-network
+    restart: unless-stopped
+
 
 # Network và Volumes
 networks:

@@ -1,5 +1,49 @@
 spring:
   application:
     name: email-service
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        concurrency: 3
+        max-concurrency: 10
+        retry:
+          enabled: true
+          max-attempts: 3
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: minhtruongb16@gmail.com
+    password: ptja vllf ahug swvh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: 8084
+
+rabbitmq:
+  exchange:
+    name: "main_exchange"
+
+  # User Queue
+  queue:
+    user: "email_user_queue"
+    transaction: "email_transaction_queue"
+    property: "email_property_queue"
+  routing-key:
+    user: "user.#"
+    transaction: "transaction.#"
+    property: "property.#"
+
+
+
+

@@ -46,10 +46,14 @@ public class UserController {
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ApiResponse(HttpStatus.CREATED.value(), "User registered successfully", userService.register(user)));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error during registration", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+                    .body(new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error during registration", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -61,10 +65,14 @@ public class UserController {
             user.setPassword(request.getPassword());
 
             return ResponseEntity.ok(new ApiResponse(HttpStatus.OK.value(), "Login successful", userService.verify(user)));
-        } catch (Exception e) {
+        } catch (AppException e) {
             log.error("Error during login", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(HttpStatus.BAD_REQUEST.value(), "Invalid email or password", null));
+                    .body(new ApiResponse(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error during login", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -77,8 +85,12 @@ public class UserController {
         try{
             PageResponse<UserResponse> users = userService.getAllUsers(pageable);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get list users success", users));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error fetching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        } catch (Exception e) {
+            log.error("Unexpected error fetching users", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
@@ -92,8 +104,12 @@ public class UserController {
         try{
             PageResponse<UserResponse> users = userService.searchUsers(keyword, pageable);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Search users success", users));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error searching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        } catch (Exception e) {
+            log.error("Unexpected error searching users", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
@@ -105,10 +121,14 @@ public class UserController {
         try{
             UserResponse user = userService.getUserById(id);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get user success", user));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error fetching user by ID", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error fetching user by ID", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -126,10 +146,14 @@ public class UserController {
             UserDTO user = userService.getUserProfile(id);
 
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get profile success", user));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error fetching profile", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error fetching profile", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -140,10 +164,14 @@ public class UserController {
         try{
             UserResponse updatedUser = userService.updateUser(updateRequest, id);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Update user success", updatedUser));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error updating user", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error updating user", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -161,10 +189,14 @@ public class UserController {
 
             UserDTO updatedUser = userService.updateProfile(updateProfileRequest, id);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Update profile success", updatedUser));
-        }catch (AppException e){
+        } catch (AppException e){
             log.error("Error updating profile", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error updating profile", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -181,10 +213,48 @@ public class UserController {
             }
             userService.changePassword(id, changePasswordRequest);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Change password success", null));
-        }catch (AppException e) {
+        } catch (AppException e) {
             log.error("Error changing password", e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error changing password", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+        try {
+            userService.forgotPassword(forgotPasswordRequest.getEmail());
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Forgot password email sent successfully", null));
+        } catch (AppException e) {
+            log.error("Error in forgot password", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error in forgot password", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+        try {
+            userService.resetPassword(resetPasswordRequest.getEmail(),
+                    resetPasswordRequest.getOtp(),
+                    resetPasswordRequest.getNewPassword());
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Reset password success", null));
+        } catch (AppException e) {
+            log.error("Error in reset password", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error in reset password", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 }

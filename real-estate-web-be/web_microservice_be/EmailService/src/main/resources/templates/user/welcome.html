@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Chào mừng bạn!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        .email-wrapper {
+            width: 100%;
+            padding: 40px 0;
+            background-color: #f5f7fa;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background-color: #1e9d47;
+            color: #fff;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 30px 40px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .content h2 {
+            color: #1e9d47;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 25px;
+            background-color: #1e9d47;
+            color: #fff !important;
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #17853b;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+            padding: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+<div class="email-wrapper">
+    <div class="email-container">
+        <div class="header">
+            <h1>Chào mừng bạn đến với Hệ thống của chúng tôi!</h1>
+        </div>
+        <div class="content">
+            <h2 th:text="'Xin chào, ' + ${data.name} + '!'">Xin chào, User's Name!</h2>
+            <p>
+                Cảm ơn bạn đã đăng ký tài khoản tại hệ thống của chúng tôi.
+                Tài khoản của bạn đã được tạo thành công và sẵn sàng để sử dụng.
+            </p>
+            <p>Chúng tôi rất vui được đồng hành cùng bạn trong hành trình sắp tới!</p>
+
+            <p style="margin-top: 30px;">
+                Trân trọng,<br />
+                <strong>Đội ngũ Hỗ trợ</strong>
+            </p>
+        </div>
+        <div class="footer">
+            © 2025 Hệ thống của chúng tôi. Mọi quyền được bảo lưu.
+        </div>
+    </div>
+</div>
+</body>
+</html>

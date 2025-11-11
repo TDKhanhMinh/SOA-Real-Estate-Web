@@ -1,7 +1,10 @@
 package com.example.UserService.service;
 
 import com.example.UserService.config.JwtUtil;
+import com.example.UserService.dto.EmailNotificationDTO;
 import com.example.UserService.dto.UserDTO;
+import com.example.UserService.model.OTP;
+import com.example.UserService.repository.OtpRepository;
 import com.example.UserService.request.UpdateProfileRequest;
 import com.example.UserService.request.UpdateRequest;
 import com.example.UserService.response.PageResponse;
@@ -12,8 +15,10 @@ import com.example.UserService.exception.ErrorCode;
 import com.example.UserService.mapper.UserMapper;
 import com.example.UserService.repository.UserRepository;
 import com.example.UserService.response.AuthResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,19 +29,145 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
-
+import java.util.Random;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserRepository userRepo;
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final RabbitTemplate rabbitTemplate;
+    private final OtpRepository otpRepository;
+
+
+    // Rabbit mq config values
+    @Value("${rabbitmq.exchange.name}")
+    private String exchangeName;
+
+    @Value("${rabbitmq.routing-key.register}")
+    private String registerRoutingKey;
+
+    @Value("${rabbitmq.routing-key.forgot-password}")
+    private String forgotPasswordRoutingKey;
+
+    @Transactional
+    public UserDTO register(User user) {
+        if(userRepo.existsByEmail(user.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXIST);
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setCreatedAt(LocalDateTime.now());
+        user.setAvatarUrl("https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=");
+        User savedUser = userRepo.save(user);
+        log.info("User registered successfully: {}", savedUser.getEmail());
+
+        try{
+            EmailNotificationDTO emailNotificationDTO = new EmailNotificationDTO(
+                    savedUser.getEmail(),
+                    "Welcome to Our Service",
+                    "WELCOME_EMAIL",
+                    savedUser.getId(),
+                    Map.of("name", savedUser.getName())
+            );
+
+            rabbitTemplate.convertAndSend(
+                    exchangeName,
+                    registerRoutingKey,
+                    emailNotificationDTO
+            );
+
+            log.info("Sent registration message to RabbitMQ for user: {}", savedUser.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send registration message for user {}: {}", savedUser.getEmail(), e.getMessage());
+        }
+
+        return userMapper.toUserDTO(savedUser);
+    }
+
+    @Override
+    public AuthResponse verify(User user) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
+        );
+
+        if (authentication.isAuthenticated()) {
+            user = userRepo.findByEmail(user.getEmail())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            if(!user.getIsActive()) {
+                throw new AppException(ErrorCode.USER_INACTIVE);
+            }
+
+            String token = jwtUtil.generateToken(user.getEmail(), String.valueOf(user.getRole()));
+
+            return new AuthResponse(token, userMapper.toUserDTO(user));
+
+        }
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        String otpCode = String.format("%06d", new Random().nextInt(999999));
+
+        OTP otp = otpRepository.findByUserId(user.getId())
+                .orElse(new OTP());
+
+        otp.setUserId(user.getId());
+        otp.setCode(otpCode);
+        otp.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+
+        otpRepository.save(otp);
+
+        try {
+            EmailNotificationDTO emailDto = new EmailNotificationDTO(
+                    user.getEmail(),
+                    "Yêu cầu đặt lại mật khẩu (Mã OTP)",
+                    "FORGOT_PASSWORD_OTP",
+                    user.getId(),
+                    Map.of("otp", otpCode)
+            );
+
+            rabbitTemplate.convertAndSend(exchangeName, forgotPasswordRoutingKey, emailDto);
+            log.info("Đã gửi tác vụ 'FORGOT_PASSWORD_OTP' cho user {}", user.getEmail());
+
+        } catch (Exception e) {
+            log.error("Lỗi khi gửi tin nhắn RabbitMQ (FORGOT_PASSWORD_OTP): {}", e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String email, String otpCode, String newPassword) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        OTP otp = otpRepository.findByUserIdAndCode(user.getId(), otpCode)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
+
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            otpRepository.delete(otp);
+            throw new AppException(ErrorCode.OTP_EXPIRED); // "OTP đã hết hạn"
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+
+        otpRepository.delete(otp);
+
+        log.info("Đổi mật khẩu thành công cho user {}", email);
+    }
 
     @Override
     public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
@@ -111,15 +242,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteById(Long id) {
-        if (!userRepo.existsById(id)) {
-            throw new AppException(ErrorCode.USER_NOT_FOUND);
-        }
-        userRepo.deleteById(id);
-    }
-
-    @Override
-    @Transactional
     public UserResponse updateUser(UpdateRequest updateRequest, Long id) {
         User existingUser = userRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -143,41 +265,6 @@ public class UserServiceImpl implements UserService {
         existingUser.setEmail(updateProfileRequest.getEmail());
 
         return userMapper.toUserDTO(userRepo.save(existingUser));
-    }
-
-    @Override
-    public AuthResponse verify(User user) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-        );
-
-        if (authentication.isAuthenticated()) {
-            user = userRepo.findByEmail(user.getEmail())
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-            if(!user.getIsActive()) {
-                throw new AppException(ErrorCode.USER_INACTIVE);
-            }
-
-            String token = jwtUtil.generateToken(user.getEmail(), String.valueOf(user.getRole()));
-
-            return new AuthResponse(token, userMapper.toUserDTO(user));
-
-        }
-        return null;
-    }
-
-    @Transactional
-    public UserDTO register(User user) {
-        if(userRepo.existsByEmail(user.getEmail())) {
-            throw new AppException(ErrorCode.EMAIL_EXIST);
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setAvatarUrl("https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=");
-        User savedUser = userRepo.save(user);
-        log.info("User registered successfully: {}", savedUser.getEmail());
-        return userMapper.toUserDTO(savedUser);
     }
 
     @Override

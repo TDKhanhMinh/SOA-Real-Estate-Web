@@ -19,17 +19,19 @@ public interface UserService {
 
     UserDTO getUserProfile(Long id);
 
-    void deleteById(Long id);
-
-    UserDTO register(User user);
-
     UserResponse updateUser(UpdateRequest updateRequest, Long id);
 
     UserDTO updateProfile(UpdateProfileRequest updateProfileRequest, Long id);
 
     AuthResponse verify(User user);
 
+    UserDTO register(User user);
+
     PageResponse<UserResponse> searchUsers(String keyword, Pageable pageable);
 
     void changePassword(Long id, ChangePasswordRequest changePasswordRequest);
+
+    void forgotPassword(String email);
+
+    void resetPassword(String email, String otpCode, String newPassword);
 }
