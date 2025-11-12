@@ -1,13 +1,12 @@
 package com.example.ListingService.service;
 
-import com.example.ListingService.entity.Properties;
+import com.example.ListingService.model.Properties;
 import com.example.ListingService.repository.PropertiesRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor

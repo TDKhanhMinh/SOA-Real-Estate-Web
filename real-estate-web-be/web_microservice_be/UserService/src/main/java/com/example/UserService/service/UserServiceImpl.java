@@ -57,6 +57,9 @@ public class UserServiceImpl implements UserService {
     @Value("${rabbitmq.routing-key.forgot-password}")
     private String forgotPasswordRoutingKey;
 
+    @Value("${rabbitmq.routing-key.user-created}")
+    private String userCreatedRoutingKey;
+
     @Transactional
     public UserDTO register(User user) {
         if(userRepo.existsByEmail(user.getEmail())) {

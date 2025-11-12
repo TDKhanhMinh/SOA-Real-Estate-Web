@@ -10,31 +10,20 @@ spring:
           predicates:
             - Path=/listing/**
           filters:
-            - StripPrefix=1
             - JwtAuthenticationFilter
 
-        - id: payment-service
+        - id: transaction-service
           uri: http://localhost:8082
           predicates:
-            - Path=/payment/**
+            - Path=/transaction/**
           filters:
-            - StripPrefix=1
             - JwtAuthenticationFilter
 
-        - id: rental-service
+        - id: subscription-service
           uri: http://localhost:8083
           predicates:
-            - Path=/rental/**
+            - Path=/subscription/**
           filters:
-            - StripPrefix=1
-            - JwtAuthenticationFilter
-
-        - id: sales-service
-          uri: http://localhost:8084
-          predicates:
-            - Path=/sales/**
-          filters:
-            - StripPrefix=1
             - JwtAuthenticationFilter
 
         - id: user-service
