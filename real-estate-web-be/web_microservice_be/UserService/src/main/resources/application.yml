@@ -1,5 +1,17 @@
 spring:
   application:
     name: user-service
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
 server:
   port: 8085
+
+rabbitmq:
+  exchange:
+    name: "main_exchange"
+  routing-key:
+    register: "user.register"
+    forgot-password: "user.forgot_password"

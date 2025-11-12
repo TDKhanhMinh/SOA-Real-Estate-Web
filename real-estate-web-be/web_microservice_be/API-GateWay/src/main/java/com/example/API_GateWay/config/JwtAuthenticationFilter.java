@@ -26,7 +26,9 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
     public static final List<String> PUBLIC_PATHS = List.of(
             "/user/register",
-            "/user/login"
+            "/user/login",
+            "/user/forgot-password",
+            "/user/reset-password"
     );
 
     @Override

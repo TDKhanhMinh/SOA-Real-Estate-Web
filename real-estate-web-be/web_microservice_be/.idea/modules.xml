@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/EmailService/EmailService.iml" filepath="$PROJECT_DIR$/EmailService/EmailService.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Java_Project_Final.iml" filepath="$PROJECT_DIR$/.idea/Java_Project_Final.iml" />
     </modules>
   </component>
