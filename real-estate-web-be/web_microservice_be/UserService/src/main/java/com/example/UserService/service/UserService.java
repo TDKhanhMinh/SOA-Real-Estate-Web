@@ -4,6 +4,7 @@ import com.example.UserService.dto.UserDTO;
 import com.example.UserService.request.ChangePasswordRequest;
 import com.example.UserService.request.UpdateProfileRequest;
 import com.example.UserService.request.UpdateRequest;
+import com.example.UserService.request.VerifyOTPRequest;
 import com.example.UserService.response.PageResponse;
 import com.example.UserService.response.UserResponse;
 import com.example.UserService.model.User;
@@ -34,4 +35,6 @@ public interface UserService {
     void forgotPassword(String email);
 
     void resetPassword(String email, String otpCode, String newPassword);
+
+    void verifyOTP(VerifyOTPRequest verifyOTPRequest);
 }
