@@ -6,6 +6,7 @@ import com.example.UserService.dto.UserCreatedDTO;
 import com.example.UserService.dto.UserDTO;
 import com.example.UserService.model.OTP;
 import com.example.UserService.repository.OtpRepository;
+import com.example.UserService.request.ChangePasswordRequest;
 import com.example.UserService.request.UpdateProfileRequest;
 import com.example.UserService.request.UpdateRequest;
 import com.example.UserService.request.VerifyOTPRequest;
@@ -303,7 +304,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changePassword(Long id, com.example.UserService.request.ChangePasswordRequest changePasswordRequest) {
+    public void changePassword(Long id, ChangePasswordRequest changePasswordRequest) {
         User existingUser = userRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), existingUser.getPassword())) {

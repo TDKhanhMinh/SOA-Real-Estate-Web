@@ -8,6 +8,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class VerifyOTPRequest {
+    @Size(min = 6, max = 6, message = "CODE_INVALID")
     private String code;
     @Email(message = "EMAIL_INVALID")
     @Size(max = 100, message = "EMAIL_TOO_LONG")

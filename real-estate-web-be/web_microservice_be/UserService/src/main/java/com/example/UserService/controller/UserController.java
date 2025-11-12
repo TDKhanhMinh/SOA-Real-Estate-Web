@@ -201,7 +201,7 @@ public class UserController {
     }
 
     @PutMapping("/change-password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequest changePasswordRequest,
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Validated @RequestBody ChangePasswordRequest changePasswordRequest,
                                                             @AuthenticationPrincipal String userIdStr) {
         try{
             Long id;
@@ -225,7 +225,7 @@ public class UserController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<Void>> verifyOtp(@RequestBody VerifyOTPRequest verifyOtpRequest) {
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@Validated @RequestBody VerifyOTPRequest verifyOtpRequest) {
         try {
             userService.verifyOTP(verifyOtpRequest);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP verified successfully", null));
@@ -241,7 +241,7 @@ public class UserController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Validated @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         try {
             userService.forgotPassword(forgotPasswordRequest.getEmail());
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Forgot password email sent successfully", null));
@@ -257,7 +257,7 @@ public class UserController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Validated @RequestBody ResetPasswordRequest resetPasswordRequest) {
         try {
             userService.resetPassword(resetPasswordRequest.getEmail(),
                     resetPasswordRequest.getOtp(),
