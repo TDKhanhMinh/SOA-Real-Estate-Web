@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { userService } from "../services/userService";
 import { ShieldCheck } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function OtpVerification() {
     const [otp, setOtp] = useState(Array(6).fill(""));
@@ -10,6 +10,7 @@ export default function OtpVerification() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const { state } = useLocation();
+    const navigate = useNavigate();
     const email = state?.email;
 
     const handleChange = (value, index) => {
@@ -28,7 +29,6 @@ export default function OtpVerification() {
         try {
             await userService.forgotPassword({ email: email });
             toast.success("Mã OTP mới đã được gửi đến email của bạn.");
-
         } catch (error) {
             if (error.response?.data?.message) {
                 toast.error(error.response.data.message);
@@ -56,11 +56,9 @@ export default function OtpVerification() {
 
         setLoading(true);
         try {
-            await userService.verifyOTP({ code });
-            setMessage({
-                type: "success",
-                text: "Mã OTP chính xác! Bạn có thể đặt lại mật khẩu mới.",
-            });
+            await userService.verifyOTP({ code, email });
+            toast.success("Xác minh OTP thành công! Bạn có thể đặt lại mật khẩu bây giờ.");
+            navigate("/reset-password", { state: { email: email, otp: otp.join("") } });
         } catch (error) {
             toast.error(error.response?.data?.message || error.message);
         } finally {

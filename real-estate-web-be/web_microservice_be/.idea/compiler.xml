@@ -17,6 +17,8 @@
       <module name="api-gateway" target="17" />
       <module name="DiscoveryService" target="17" />
       <module name="EmailService" target="17" />
+      <module name="PaymentService" target="17" />
+      <module name="RentalService" target="17" />
       <module name="SubscriptionService" target="17" />
       <module name="TransactionService" target="17" />
       <module name="UserService" target="17" />

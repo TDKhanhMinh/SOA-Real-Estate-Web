@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/user/login").permitAll()
                         .requestMatchers("/user/forgot-password").permitAll()
                         .requestMatchers("/user/reset-password").permitAll()
+                        .requestMatchers("/user/verify-otp").permitAll()
                         .anyRequest().authenticated()
                 )
                 .build();
