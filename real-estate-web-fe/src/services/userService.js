@@ -17,4 +17,8 @@ export const userService = {
         const res = await http.put("user/change-password", data);
         return res.data.data;
     },
+    forgotPassword: async (data) => {
+        const res = await http.post("user/forgot-password", data);
+        return res.data.data;
+    },
 }

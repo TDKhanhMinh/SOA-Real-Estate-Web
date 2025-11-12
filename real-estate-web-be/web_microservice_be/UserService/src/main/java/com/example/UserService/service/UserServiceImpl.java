@@ -91,27 +91,8 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(savedUser);
     }
 
-    @Override
-    public AuthResponse verify(User user) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-        );
 
-        if (authentication.isAuthenticated()) {
-            user = userRepo.findByEmail(user.getEmail())
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-            if(!user.getIsActive()) {
-                throw new AppException(ErrorCode.USER_INACTIVE);
-            }
-
-            String token = jwtUtil.generateToken(user.getEmail(), String.valueOf(user.getRole()));
-
-            return new AuthResponse(token, userMapper.toUserDTO(user));
-
-        }
-        return null;
-    }
 
     @Override
     @Transactional
@@ -289,18 +270,7 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    @Transactional
-    public UserDTO register(User user) {
-        if(userRepo.existsByEmail(user.getEmail())) {
-            throw new AppException(ErrorCode.EMAIL_EXIST);
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setCreatedAt(LocalDateTime.now());
-        user.setAvatarUrl("https://media.istockphoto.com/id/1300845620/vector/user-icon-flat-isolated-on-white-background-user-symbol-vector-illustration.jpg?s=612x612&w=0&k=20&c=yBeyba0hUkh14_jgv1OKqIH0CCSWU_4ckRkAoy2p73o=");
-        User savedUser = userRepo.save(user);
-        log.info("User registered successfully: {}", savedUser.getEmail());
-        return userMapper.toUserDTO(savedUser);
-    }
+
 
     @Override
     @Transactional
