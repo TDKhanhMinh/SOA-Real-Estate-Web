@@ -18,23 +18,11 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.user}")
     private String userQueueName;
 
-    @Value("${rabbitmq.queue.transaction}")
-    private String transactionQueueName;
-
-    @Value("${rabbitmq.queue.property}")
-    private String propertyQueueName;
-
-    @Value("${rabbitmq.routing-key.user}")
+    @Value("${rabbitmq.routing-key.user-created}")
     private String userRoutingKey;
 
-    @Value("${rabbitmq.routing-key.transaction}")
-    private String transactionRoutingKey;
-
-    @Value("${rabbitmq.routing-key.property}")
-    private String propertyRoutingKey;
-
     @Bean
-    public TopicExchange emailExchange(){
+    public TopicExchange subscriptionExchange(){
         return new TopicExchange(exchangeName);
     }
 
@@ -44,37 +32,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue transactionQueue() {
-        return new Queue(transactionQueueName);
-    }
-
-    @Bean
-    public Queue propertyQueue() {
-        return new Queue(propertyQueueName);
-    }
-
-    @Bean
-    public Binding userBinding(Queue userQueue, TopicExchange emailExchange) {
+    public Binding userBinding(Queue userQueue, TopicExchange subscriptionExchange) {
         return BindingBuilder
                 .bind(userQueue)
-                .to(emailExchange)
+                .to(subscriptionExchange)
                 .with(userRoutingKey);
-    }
-
-    @Bean
-    public Binding transactionBinding(Queue transactionQueue, TopicExchange emailExchange) {
-        return BindingBuilder
-                .bind(transactionQueue)
-                .to(emailExchange)
-                .with(transactionRoutingKey);
-    }
-
-    @Bean
-    public Binding propertyBinding(Queue propertyQueue, TopicExchange emailExchange) {
-        return BindingBuilder
-                .bind(propertyQueue)
-                .to(emailExchange)
-                .with(propertyRoutingKey);
     }
 
     @Bean

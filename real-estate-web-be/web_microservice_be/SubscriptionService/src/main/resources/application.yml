@@ -17,4 +17,12 @@ spring:
 server:
   port: 8083
 
+rabbitmq:
+  exchange:
+    name: "main_exchange"
+  queue:
+    user: "subscription_user_queue"
+  routing-key:
+    user-created: "user.created"
+
 

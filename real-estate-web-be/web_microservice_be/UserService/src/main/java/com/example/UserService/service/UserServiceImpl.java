@@ -2,6 +2,7 @@ package com.example.UserService.service;
 
 import com.example.UserService.config.JwtUtil;
 import com.example.UserService.dto.EmailNotificationDTO;
+import com.example.UserService.dto.UserCreatedDTO;
 import com.example.UserService.dto.UserDTO;
 import com.example.UserService.model.OTP;
 import com.example.UserService.repository.OtpRepository;
@@ -87,9 +88,20 @@ public class UserServiceImpl implements UserService {
                     emailNotificationDTO
             );
 
+            UserCreatedDTO userCreatedDTO = new UserCreatedDTO(
+                    savedUser.getId()
+            );
+            rabbitTemplate.convertAndSend(
+                    exchangeName,
+                    userCreatedRoutingKey,
+                    userCreatedDTO
+            );
+
             log.info("Sent registration message to RabbitMQ for user: {}", savedUser.getEmail());
+            log.info("Sent user created message to RabbitMQ for user: {}", savedUser.getEmail());
         } catch (Exception e) {
             log.error("Failed to send registration message for user {}: {}", savedUser.getEmail(), e.getMessage());
+            log.error("Failed to send user created message for user {}: {}", savedUser.getEmail(), e.getMessage());
         }
 
         return userMapper.toUserDTO(savedUser);
