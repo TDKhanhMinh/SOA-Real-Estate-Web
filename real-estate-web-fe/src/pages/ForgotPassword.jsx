@@ -29,7 +29,7 @@ export default function ForgotPassword() {
                 text: "Yêu cầu đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra email của bạn.",
             });
             setForm({ email: "" });
-            navigate("/otp-verification");
+            navigate("/otp-verification", { state: { email: form.email } });
 
         } catch (error) {
             if (error.response?.data?.message) {

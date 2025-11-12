@@ -21,4 +21,8 @@ export const userService = {
         const res = await http.post("user/forgot-password", data);
         return res.data.data;
     },
+    verifyOTP: async (data) => {
+        const res = await http.post("user/otp-verification", data);
+        return res.data.data;
+    },
 }

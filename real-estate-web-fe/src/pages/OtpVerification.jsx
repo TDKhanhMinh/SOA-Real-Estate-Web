@@ -2,18 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { userService } from "../services/userService";
 import { ShieldCheck } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export default function OtpVerification() {
     const [otp, setOtp] = useState(Array(6).fill(""));
     const inputsRef = useRef([]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
+    const { state } = useLocation();
+    const email = state?.email;
 
-    // Auto-focus next input
     const handleChange = (value, index) => {
         if (/^\d*$/.test(value)) {
             const newOtp = [...otp];
-            newOtp[index] = value.slice(-1); // only last digit
+            newOtp[index] = value.slice(-1);
             setOtp(newOtp);
 
             if (value && index < 5) {
@@ -21,8 +23,23 @@ export default function OtpVerification() {
             }
         }
     };
+    const handleResentOtp = async () => {
+        setLoading(true);
+        try {
+            await userService.forgotPassword({ email: email });
+            toast.success("Mã OTP mới đã được gửi đến email của bạn.");
 
-    // Handle backspace → move focus to previous
+        } catch (error) {
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error(error.message);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const handleKeyDown = (e, index) => {
         if (e.key === "Backspace" && !otp[index] && index > 0) {
             inputsRef.current[index - 1].focus();
@@ -39,8 +56,7 @@ export default function OtpVerification() {
 
         setLoading(true);
         try {
-            // Example API call:
-            await userService.verifyOtp({ code });
+            await userService.verifyOTP({ code });
             setMessage({
                 type: "success",
                 text: "Mã OTP chính xác! Bạn có thể đặt lại mật khẩu mới.",
@@ -73,8 +89,8 @@ export default function OtpVerification() {
                 {message && (
                     <div
                         className={`p-3 mb-5 rounded-md text-sm font-medium transition-all ${message.type === "success"
-                                ? "bg-emerald-500/80"
-                                : "bg-rose-500/80"
+                            ? "bg-emerald-500/80"
+                            : "bg-rose-500/80"
                             }`}
                     >
                         {message.text}
@@ -112,7 +128,7 @@ export default function OtpVerification() {
                     Không nhận được mã?{" "}
                     <button
                         type="button"
-                        onClick={() => toast.info("Đã gửi lại mã OTP!")}
+                        onClick={handleResentOtp}
                         className="text-white font-semibold hover:underline"
                     >
                         Gửi lại

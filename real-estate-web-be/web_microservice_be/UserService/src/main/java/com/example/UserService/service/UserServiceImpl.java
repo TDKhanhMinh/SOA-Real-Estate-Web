@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
                     "Yêu cầu đặt lại mật khẩu (Mã OTP)",
                     "FORGOT_PASSWORD_OTP",
                     user.getId(),
-                    Map.of("otp", otpCode)
+                    Map.of("otp", otpCode, "name", user.getName())
             );
 
             rabbitTemplate.convertAndSend(exchangeName, forgotPasswordRoutingKey, emailDto);
