@@ -22,7 +22,12 @@ export const userService = {
         return res.data.data;
     },
     verifyOTP: async (data) => {
-        const res = await http.post("user/otp-verification", data);
+        const res = await http.post("user/verify-otp", data);
         return res.data.data;
     },
+    resetPassword: async (data) => {
+        const res = await http.post("user/reset-password", data);
+        return res.data.data;
+    },
+
 }
