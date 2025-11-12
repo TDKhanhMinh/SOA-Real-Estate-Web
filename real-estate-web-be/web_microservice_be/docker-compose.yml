@@ -29,8 +29,8 @@ services:
       - "8080:8080"
     depends_on:
       - listing-service
-      - payment-service
-      - rental-service
+      - transaction-service
+      - subscription-service
       - email-service
       - user-service
     networks:
@@ -67,12 +67,12 @@ services:
       - microservice-network
     restart: unless-stopped
 
-  # Rental Service
-  rental-service:
-    build: ./RentalService
-    container_name: rental-service
+  # Subscription Service
+  subscription-service:
+    build: ./SubscriptionService
+    container_name: subscription-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_rental_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_subscription_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
@@ -84,12 +84,12 @@ services:
       - "8083:8083"
     restart: unless-stopped
 
-  # Payment Service
-  payment-service:
-    build: ./PaymentService
-    container_name: payment-service
+  # Transaction Service
+  transaction-service:
+    build: ./TransactionService
+    container_name: transaction-service
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_payment_db
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/soa_transaction_db
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: rootpassword
     depends_on:
@@ -97,8 +97,6 @@ services:
       - rabbitmq
     networks:
       - microservice-network
-    ports:
-      - "8082:8082"
     restart: unless-stopped
 
   # Listing Service

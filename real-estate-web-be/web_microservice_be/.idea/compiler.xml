@@ -8,8 +8,6 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="ListingService" />
-        <module name="RentalService" />
-        <module name="PaymentService" />
         <module name="API-GateWay" />
       </profile>
     </annotationProcessing>
@@ -18,7 +16,9 @@
       <module name="API-gateway" target="17" />
       <module name="api-gateway" target="17" />
       <module name="DiscoveryService" target="17" />
-      <module name="SalesService" target="17" />
+      <module name="EmailService" target="17" />
+      <module name="SubscriptionService" target="17" />
+      <module name="TransactionService" target="17" />
       <module name="UserService" target="17" />
     </bytecodeTargetLevel>
   </component>
@@ -30,8 +30,8 @@
       <module name="DiscoveryService" options="-parameters" />
       <module name="EmailService" options="-parameters" />
       <module name="ListingService" options="-parameters" />
-      <module name="PaymentService" options="-parameters" />
-      <module name="RentalService" options="-parameters" />
+      <module name="SubscriptionService" options="-parameters" />
+      <module name="TransactionService" options="-parameters" />
       <module name="UserService" options="-parameters" />
       <module name="api-gateway" options="-parameters" />
     </option>

@@ -224,6 +224,22 @@ public class UserController {
         }
     }
 
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<Void>> verifyOtp(@RequestBody VerifyOTPRequest verifyOtpRequest) {
+        try {
+            userService.verifyOTP(verifyOtpRequest);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "OTP verified successfully", null));
+        } catch (AppException e) {
+            log.error("Error verifying OTP", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error verifying OTP", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         try {

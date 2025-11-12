@@ -34,7 +34,6 @@ rabbitmq:
   exchange:
     name: "main_exchange"
 
-  # User Queue
   queue:
     user: "email_user_queue"
     transaction: "email_transaction_queue"

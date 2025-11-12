@@ -7,6 +7,7 @@ import com.example.UserService.model.OTP;
 import com.example.UserService.repository.OtpRepository;
 import com.example.UserService.request.UpdateProfileRequest;
 import com.example.UserService.request.UpdateRequest;
+import com.example.UserService.request.VerifyOTPRequest;
 import com.example.UserService.response.PageResponse;
 import com.example.UserService.response.UserResponse;
 import com.example.UserService.model.User;
@@ -57,6 +58,9 @@ public class UserServiceImpl implements UserService {
     @Value("${rabbitmq.routing-key.forgot-password}")
     private String forgotPasswordRoutingKey;
 
+    @Value("${rabbitmq.routing-key.user-created}")
+    private String userCreatedRoutingKey;
+
     @Transactional
     public UserDTO register(User user) {
         if(userRepo.existsByEmail(user.getEmail())) {
@@ -90,8 +94,6 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.toUserDTO(savedUser);
     }
-
-
 
 
     @Override
@@ -148,6 +150,21 @@ public class UserServiceImpl implements UserService {
         otpRepository.delete(otp);
 
         log.info("Đổi mật khẩu thành công cho user {}", email);
+    }
+
+    @Override
+    public void verifyOTP(VerifyOTPRequest verifyOTPRequest) {
+        User user = userRepo.findByEmail(verifyOTPRequest.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        OTP otp = otpRepository.findByUserIdAndCode(user.getId(), verifyOTPRequest.getCode())
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
+
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new AppException(ErrorCode.OTP_EXPIRED); // "OTP đã hết hạn"
+        }
+
+        log.info("Xác thực OTP thành công cho user {}", verifyOTPRequest.getEmail());
     }
 
     @Override
