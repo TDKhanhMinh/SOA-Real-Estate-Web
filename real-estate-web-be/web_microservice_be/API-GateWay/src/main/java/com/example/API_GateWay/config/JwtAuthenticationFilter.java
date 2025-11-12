@@ -25,7 +25,6 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     }
 
     public static final List<String> PUBLIC_PATHS = List.of(
-//            "/listing/public" // Đường dẫn listing public
             "/user/register",
             "/user/login"
     );

@@ -159,7 +159,7 @@ public class UserServiceImpl implements UserService {
                 throw new AppException(ErrorCode.USER_INACTIVE);
             }
 
-            String token = jwtUtil.generateToken(user.getEmail(), String.valueOf(user.getRole()));
+            String token = jwtUtil.generateToken(user.getId(), String.valueOf(user.getRole()));
 
             return new AuthResponse(token, userMapper.toUserDTO(user));
 

@@ -9,7 +9,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="ListingService" />
         <module name="RentalService" />
-        <module name="SalesService" />
         <module name="PaymentService" />
         <module name="API-GateWay" />
       </profile>
@@ -19,6 +18,7 @@
       <module name="API-gateway" target="17" />
       <module name="api-gateway" target="17" />
       <module name="DiscoveryService" target="17" />
+      <module name="SalesService" target="17" />
       <module name="UserService" target="17" />
     </bytecodeTargetLevel>
   </component>

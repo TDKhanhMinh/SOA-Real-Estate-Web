@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Button from "../components/Button";
+import { userService } from "../services/userService";
 
 export default function ChangePassword() {
     const [form, setForm] = useState({
-        currentPassword: "",
+        oldPassword: "",
         newPassword: "",
         confirmPassword: "",
     });
@@ -14,10 +15,10 @@ export default function ChangePassword() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
+        if (!form.oldPassword || !form.newPassword || !form.confirmPassword) {
             setMessage({ type: "error", text: "Vui lòng điền đầy đủ thông tin." });
             return;
         }
@@ -26,9 +27,17 @@ export default function ChangePassword() {
             return;
         }
 
-        // TODO: call API change password
         console.log("Submitted form:", form);
+        await userService.changePassword({
+            oldPassword: form.oldPassword,
+            newPassword: form.newPassword,
+        });
         setMessage({ type: "success", text: "Thay đổi mật khẩu thành công!" });
+        setForm({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        });
     };
 
     return (
@@ -67,8 +76,8 @@ export default function ChangePassword() {
                                 </label>
                                 <input
                                     type="password"
-                                    name="currentPassword"
-                                    value={form.currentPassword}
+                                    name="oldPassword"
+                                    value={form.oldPassword}
                                     onChange={handleChange}
                                     placeholder="Nhập mật khẩu hiện tại"
                                     className="w-full px-4 py-2 rounded-full focus:ring-2 focus:ring-blue-400 outline-none"

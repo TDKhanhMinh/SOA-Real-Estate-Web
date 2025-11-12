@@ -1,21 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../components/Button";
 import EditProfileModal from "../components/EditProfileModal";
 import ImageUploadModal from "../components/UploadImageModal";
+import { userService } from "../services/userService";
 
 export default function Profile() {
     const [isModalOpen, setModalOpen] = useState(false);
     const [isImageModalOpen, setImageModalOpen] = useState(false);
-    const [user, setUser] = useState({
-        fullName: "Nguyễn Trường Nam",
-        email: "nam@gmail.com",
-        phone: "0901234567",
-        imageUrl:
-            "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg",
+    const [user, setUser] = useState();
+    useEffect(() => {
+
+        fetchProfile();
     });
-    const handleSave = (data) => {
-        console.log("Dữ liệu mới:", data);
+    const fetchProfile = async () => {
+        const data = await userService.getProfile();
+        console.log("Profile data return", data);
         setUser(data);
+    };
+    const handleSave = async (data) => {
+        console.log("Dữ liệu mới:", data);
+        const userUpdate = await userService.updateProfile(data);
+        setUser(userUpdate);
+        fetchProfile();
     };
     const handleSaveImage = (files) => {
         console.log("Ảnh được chọn:", files);
@@ -36,13 +42,13 @@ export default function Profile() {
 
                 <div className="flex justify-between items-end ">
                     <img
-                        src={user.imageUrl || "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
+                        src={user?.avatarUrl || "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
                         alt="profile"
                         className="w-40 h-40 rounded-full object-cover border-4 border-white -mt-16"
                     />
                     <div className="text-right">
-                        <h4 className="text-xl font-bold">{user.fullName}</h4>
-                        <p className="text-gray-600">{user.email}</p>
+                        <h4 className="text-xl font-bold">{user?.name}</h4>
+                        <p className="text-gray-600">{user?.email}</p>
                     </div>
                 </div>
 
@@ -56,15 +62,15 @@ export default function Profile() {
                     <div className="mt-2 space-y-2 text-sm">
                         <p>
                             <span className="font-semibold text-base ">Tên đầy đủ: </span>
-                            {user.fullName}
+                            {user?.name}
                         </p>
                         <p>
                             <span className="font-semibold text-base ">Email: </span>
-                            {user.email}
+                            {user?.email}
                         </p>
                         <p>
                             <span className="font-semibold text-base ">Số điện thoại: </span>
-                            {user.phone}
+                            {user?.phone}
                         </p>
                     </div>
                 </div>

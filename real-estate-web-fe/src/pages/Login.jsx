@@ -7,14 +7,14 @@ import { useAuth } from "../hooks/useAuth";
 
 
 export default function Login() {
-  const { login} = useAuth();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const { login } = useAuth();
+  const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate()
 
   const validateForm = () => {
     const newErrors = {};
-    if (!form.username) newErrors.username = "Tài khoản không được để trống";
+    if (!form.email) newErrors.email = "Email không được để trống";
 
     if (!form.password) newErrors.password = "Mật khẩu không được để trống";
     return newErrors;
@@ -28,11 +28,22 @@ export default function Login() {
       return;
     }
     setErrors({});
-    await login(form.username, form.password)
-    console.log("Login success with data:", form);
-    navigate("/");
-
-    toast.success("Đăng nhập thành công!")
+    try {
+      await login(form.email, form.password)
+      console.log("Login success with data:", form);
+      if (form.email === "admin@gmail.com") {
+        navigate("/admin/dashboard")
+      } else {
+        navigate("/");
+      }
+      toast.success("Đăng nhập thành công!")
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message);
+      }
+    }
   };
 
   return (
@@ -65,13 +76,13 @@ export default function Login() {
               <TextInput
                 type="email"
                 label="Email address"
-                id="username"
-                onChange={(e) => { setForm({ ...form, username: e.target.value }) }}
+                id="email"
+                onChange={(e) => { setForm({ ...form, email: e.target.value }) }}
                 className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
-              {errors.username && (
+              {errors.email && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.username}
+                  {errors.email}
                 </p>
               )}
             </div>
