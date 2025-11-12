@@ -2,6 +2,7 @@ package com.example.SubscriptionService.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Builder
 @Table(name = "subscriptions")
 public class Subscription {
     @Id
@@ -28,6 +30,15 @@ public class Subscription {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "max_post")
+    private Integer maxPost;
 
+    @Column(name = "priority")
+    private Integer priority;
 
+    @Column(name = "post_expiry_days")
+    private Integer postExpiryDays;
+
+    @Column(name = "isActive")
+    private Boolean isActive = true;
 }

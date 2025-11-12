@@ -19,7 +19,10 @@ public enum ErrorCode {
     INVALID_OLD_PASSWORD(1005, "Invalid old password"),
     USER_INACTIVE(1004, "User is inactive"),
     INVALID_OTP(1006, "Invalid OTP code"),
-    OTP_EXPIRED(1007, "OTP code has expired");
+    OTP_EXPIRED(1007, "OTP code has expired"),
+
+    SUBSCRIPTION_NOT_FOUND(2001, "Subscription package not found"),
+    CANNOT_INACTIVE_BASIC_SUBSCRIPTION(2002, "Cannot inactivate basic subscription package");
 
     private final int code;
     private final String message;
