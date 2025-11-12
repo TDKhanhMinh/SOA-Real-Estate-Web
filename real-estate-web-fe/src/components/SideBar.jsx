@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "./Button";
 import { IoWalletOutline } from "react-icons/io5";
 
 export default function Sidebar() {
-    const [user] = useState({
-        fullName: "Nguyễn Trường Nam",
-        imageUrl:
+    const [user, setUser] = useState({
+        name: "",
+        avatarUrl:
             "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg",
         accountBalance: 12000000,
         paymentCode: "1234567890",
     });
 
+    useEffect(() => {
+
+        fetchUserData();
+    });
+    const fetchUserData = async () => {
+        setUser(localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : user);
+    };
     const copyToClipboard = () => {
         navigator.clipboard.writeText(user.paymentCode);
         alert("Mã chuyển khoản đã được sao chép!");
@@ -18,19 +25,17 @@ export default function Sidebar() {
 
     return (
         <div className="w-[20%] bg-white border-r min-h-screen p-4">
-            {/* Thông tin user */}
             <div className="flex flex-col items-center bg-gray-100 rounded-lg p-4">
                 <img
                     className="rounded-full w-12 h-12 object-cover mb-2"
-                    src={user.imageUrl}
+                    src={user.avatarUrl||"https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
                     alt="photo"
                 />
-                <span className="font-bold text-gray-800">{user.fullName}</span>
+                <span className="font-bold text-gray-800">{user.name}</span>
             </div>
 
             <hr className="my-4 border-gray-400" />
 
-            {/* Số dư tài khoản */}
             <div className="bg-gray-100 rounded-lg p-4 mb-4">
                 <h6 className="font-semibold mb-2">Số dư tài khoản</h6>
                 <div className="flex justify-between my-2">
@@ -79,7 +84,7 @@ export default function Sidebar() {
                 <div className="flex flex-col gap-2">
                     <Button className="text-start hover:bg-gray-200 w-full inline">Lịch sử nạp tiền</Button>
                     <Button to="/account/profile" className="text-start hover:bg-gray-200 w-full inline">Chỉnh sửa thông tin</Button>
-                    <Button to="/change-password" className="text-start hover:bg-gray-200 w-full inline">Đổi mật khẩu</Button>
+                    <Button to="/account/change-password" className="text-start hover:bg-gray-200 w-full inline">Đổi mật khẩu</Button>
                 </div>
             </div>
 

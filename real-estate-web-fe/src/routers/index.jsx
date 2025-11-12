@@ -21,6 +21,7 @@ import Listings from "../pages/Admin/Listings";
 import Payments from "../pages/Admin/Payments";
 import MembershipManagement from "../pages/Admin/Membership";
 import AuthLayout from "../layout/AuthLayout";
+import OtpVerification from "../pages/OtpVerification";
 
 
 const publicRoutes = createBrowserRouter([
@@ -98,6 +99,9 @@ const publicRoutes = createBrowserRouter([
             },
             {
                 path: '/forgot-password', element: <ForgotPassword />
+            },
+            {
+                path: '/opt-verification', element: <OtpVerification />
             },
 
 

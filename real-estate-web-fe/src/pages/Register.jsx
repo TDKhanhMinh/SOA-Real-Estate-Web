@@ -8,11 +8,11 @@ import { toast } from "react-toastify";
 export default function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    userName: "",
+    name: "",
     email: "",
     password: "",
+    phone: "",
     confirmPassword: "",
-    role: "USER"
   });
   const [error, setError] = useState({});
 
@@ -23,8 +23,9 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let errs = {};
-    if (!formData.userName) errs.userName = "Full name is required";
+    if (!formData.name) errs.name = "Full name is required";
     if (!formData.email) errs.email = "Email is required";
+    if (!formData.phone) errs.phone = "Phone number is required";
     if (!formData.password) errs.password = "Password is required";
     if (formData.password !== formData.confirmPassword)
       errs.confirmPassword = "Passwords do not match";
@@ -33,15 +34,19 @@ export default function Register() {
     if (Object.keys(errs).length === 0) {
       try {
         await authService.register(
-          formData.userName,
+          formData.name,
           formData.password,
           formData.email,
-          formData.role
+          formData.phone
         );
         toast.success("Đăng ký thành công!");
         navigate("/login");
       } catch (error) {
-        toast.error(error.message);
+        if (error.response && error.response.data && error.response.data.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error(error.message);
+        }
       }
 
     }
@@ -60,7 +65,7 @@ export default function Register() {
           Create an account
         </h3>
 
-        
+
         {Object.keys(error).length > 0 && (
           <div className="bg-red-100 text-red-700 p-2 rounded-full text-center mb-4">
             Please fill all fields
@@ -74,13 +79,13 @@ export default function Register() {
             </label>
             <TextInput
               type="text"
-              name="userName"
-              value={formData.userName}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
             />
-            {error.userName && (
-              <p className="text-red-500 text-sm">{error.userName}</p>
+            {error.name && (
+              <p className="text-red-500 text-sm">{error.name}</p>
             )}
           </div>
 
@@ -100,6 +105,21 @@ export default function Register() {
             )}
           </div>
 
+          <div>
+            <label className="block text-gray-700 mb-1 font-medium">
+              Phone
+            </label>
+            <TextInput
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
+            />
+            {error.phone && (
+              <p className="text-red-500 text-sm">{error.phone}</p>
+            )}
+          </div>
 
           <div>
             <label className="block text-gray-700 mb-1 font-medium">

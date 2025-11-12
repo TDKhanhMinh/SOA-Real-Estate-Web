@@ -94,27 +94,8 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(savedUser);
     }
 
-    @Override
-    public AuthResponse verify(User user) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-        );
 
-        if (authentication.isAuthenticated()) {
-            user = userRepo.findByEmail(user.getEmail())
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-            if(!user.getIsActive()) {
-                throw new AppException(ErrorCode.USER_INACTIVE);
-            }
-
-            String token = jwtUtil.generateToken(user.getEmail(), String.valueOf(user.getRole()));
-
-            return new AuthResponse(token, userMapper.toUserDTO(user));
-
-        }
-        return null;
-    }
 
     @Override
     @Transactional
@@ -269,6 +250,30 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.toUserDTO(userRepo.save(existingUser));
     }
+
+    @Override
+    public AuthResponse verify(User user) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
+        );
+
+        if (authentication.isAuthenticated()) {
+            user = userRepo.findByEmail(user.getEmail())
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+            if(!user.getIsActive()) {
+                throw new AppException(ErrorCode.USER_INACTIVE);
+            }
+
+            String token = jwtUtil.generateToken(user.getId(), String.valueOf(user.getRole()));
+
+            return new AuthResponse(token, userMapper.toUserDTO(user));
+
+        }
+        return null;
+    }
+
+
 
     @Override
     @Transactional

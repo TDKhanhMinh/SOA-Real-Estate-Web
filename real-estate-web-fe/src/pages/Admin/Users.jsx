@@ -1,63 +1,77 @@
 import { useState, useEffect } from "react";
 import Button from './../../components/Button';
+import { userService } from "../../services/userService";
+import { authService } from "../../services/authService";
+import { toast } from "react-toastify";
+import TextInput from "../../components/TextInput";
 
 export default function Users() {
-    // Mock data
-    const [users, setUsers] = useState([
-        {
-            userId: 1,
-            fullName: "Nguyễn Văn A",
-            email: "nguyenvana@example.com",
-            phone: "0912345678",
-            accountBalance: "5,000,000",
-            roles: [{ name: "USER" }],
-            images: {
-                imageUrl:
-                    "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg",
-            },
-        },
-        {
-            userId: 2,
-            fullName: "Trần Thị B",
-            email: "tranthib@example.com",
-            phone: "0987654321",
-            accountBalance: "2,000,000",
-            roles: [{ name: "ADMIN" }],
-            images: null,
-        },
-    ]);
-
+    const [users, setUsers] = useState([]);
     const [showForm, setShowForm] = useState(false);
-    const [notification, setNotification] = useState("Thêm người dùng thành công!");
+    const [notification, setNotification] = useState("");
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        phone: "",
+        confirmPassword: "",
+    });
+    const [error, setError] = useState({});
 
-    // Auto-hide notification
-    useEffect(() => {
-        if (notification) {
-            const timer = setTimeout(() => setNotification(null), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [notification]);
-
-    const handleAddUser = (e) => {
-        e.preventDefault();
-        setUsers([
-            ...users,
-            {
-                userId: users.length + 1,
-                fullName: "Người dùng mới",
-                email: "newuser@example.com",
-                phone: "0909999999",
-                accountBalance: "0",
-                roles: [{ name: "USER" }],
-                images: null,
-            },
-        ]);
-        setShowForm(false);
-        setNotification("Người dùng mới đã được thêm!");
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        let errs = {};
+        if (!formData.name) errs.name = "Full name is required";
+        if (!formData.email) errs.email = "Email is required";
+        if (!formData.phone) errs.phone = "Phone number is required";
+        if (!formData.password) errs.password = "Password is required";
+        if (formData.password !== formData.confirmPassword)
+            errs.confirmPassword = "Passwords do not match";
+
+        setError(errs);
+        if (Object.keys(errs).length === 0) {
+            try {
+                await authService.register(
+                    formData.name,
+                    formData.password,
+                    formData.email,
+                    formData.phone
+                );
+                toast.success("Đăng ký thành công!");
+                setShowForm(false);
+                setFormData({
+                    name: "",
+                    email: "",
+                    password: "",
+                    phone: "",
+                    confirmPassword: "",
+                });
+                fetchUsers();
+            } catch (error) {
+                if (error.response && error.response.data && error.response.data.message) {
+                    toast.error(error.response.data.message);
+                } else {
+                    toast.error(error.message);
+                }
+            }
+
+        }
+    };
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+    const fetchUsers = async () => {
+        console.log("Users", await userService.getAllUsers());
+        setUsers(await userService.getAllUsers());
+    };
+
+
     const handleDeleteUser = (id) => {
-        setUsers(users.filter((u) => u.userId !== id));
+        setUsers(users.filter((u) => u.id !== id));
         setNotification("Xóa người dùng thành công!");
     };
 
@@ -87,62 +101,104 @@ export default function Users() {
                 )}
             </div>
 
-            {/* Add User Form */}
             {showForm && (
-                <div className="flex justify-center w-full inline">
-                    <form
-                        onSubmit={handleAddUser}
-                        className="space-y-4 bg-white p-6 rounded-lg shadow-md border max-w-lg w-full inline"
-                    >
+                <div className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-8 mb-6">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium">Full Name</label>
-                            <input
+                            <label className="block text-gray-700 mb-1 font-medium">
+                                Your Full Name
+                            </label>
+                            <TextInput
                                 type="text"
-                                className="mt-1 block w-full border rounded-md px-3 py-2"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
                             />
+                            {error.name && (
+                                <p className="text-red-500 text-sm">{error.name}</p>
+                            )}
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium">Email</label>
-                            <input
+                            <label className="block text-gray-700 mb-1 font-medium">
+                                Your Email
+                            </label>
+                            <TextInput
                                 type="email"
-                                className="mt-1 block w-full border rounded-md px-3 py-2"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
                             />
+                            {error.email && (
+                                <p className="text-red-500 text-sm">{error.email}</p>
+                            )}
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium">Phone</label>
-                            <input
-                                type="tel"
-                                className="mt-1 block w-full border rounded-md px-3 py-2"
+                            <label className="block text-gray-700 mb-1 font-medium">
+                                Phone
+                            </label>
+                            <TextInput
+                                type="text"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
                             />
+                            {error.phone && (
+                                <p className="text-red-500 text-sm">{error.phone}</p>
+                            )}
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium">Password</label>
-                            <input
+                            <label className="block text-gray-700 mb-1 font-medium">
+                                Password
+                            </label>
+                            <TextInput
                                 type="password"
-                                className="mt-1 block w-full border rounded-md px-3 py-2"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
                             />
+                            {error.password && (
+                                <p className="text-red-500 text-sm">{error.password}</p>
+                            )}
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium">Repeat Password</label>
-                            <input
+                            <label className="block text-gray-700 mb-1 font-medium">
+                                Repeat your password
+                            </label>
+                            <TextInput
                                 type="password"
-                                className="mt-1 block w-full border rounded-md px-3 py-2"
+                                name="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-green-400"
                             />
+                            {error.confirmPassword && (
+                                <p className="text-red-500 text-sm">{error.confirmPassword}</p>
+                            )}
                         </div>
-                        <Button
-                            type="submit"
-                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700"
-                        >
-                            Register
-                        </Button>
+
+                        <div className="flex justify-center">
+                            <Button
+                                type="submit"
+                                className="px-6 py-2 rounded-full text-white bg-gradient-to-r from-green-300 to-blue-400 hover:opacity-90 transition min-w-[200px]"
+                            >
+                                Add new account
+                            </Button>
+                        </div>
                     </form>
                 </div>
             )}
 
-            {/* Users Table */}
             {!showForm && (
                 <div className="mt-6">
-                    {users.length === 0 ? (
+                    {users?.length === 0 ? (
                         <div className="flex flex-col items-center justify-center bg-white p-10 rounded-lg shadow-md">
                             <img
                                 src="https://img.icons8.com/ios/100/000000/empty-box.png"
@@ -152,7 +208,6 @@ export default function Users() {
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            {/* Header */}
                             <div className="grid grid-cols-12 bg-white shadow p-4 font-bold">
                                 <div>ID</div>
                                 <div>Avatar</div>
@@ -164,29 +219,28 @@ export default function Users() {
                                 <div className="col-span-2 text-center">Action</div>
                             </div>
 
-                            {/* Users */}
-                            {users.map((u) => (
+                            {users?.map((u) => (
                                 <div
-                                    key={u.userId}
+                                    key={u.id}
                                     className="grid grid-cols-12 bg-white shadow mt-2 items-center p-4"
                                 >
-                                    <div>{u.userId}</div>
+                                    <div>{u?.id}</div>
                                     <img
                                         src={
-                                            u.images?.imageUrl ||
+                                            u?.avatarUrl ||
                                             "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"
                                         }
                                         alt="avatar"
                                         className="w-10 h-10 rounded-full object-cover"
                                     />
-                                    <div className="col-span-2">{u.fullName}</div>
+                                    <div className="col-span-2">{u.name}</div>
                                     <div className="col-span-2">{u.email}</div>
                                     <div className="col-span-2">{u.phone}</div>
-                                    <div>{u.accountBalance}</div>
-                                    <div>{u.roles.map((r) => r.name).join(", ")}</div>
+                                    <div>{u.accountBalance || "0"}</div>
+                                    <div>{u.role}</div>
                                     <div className="col-span-2 flex justify-center">
                                         <Button
-                                            onClick={() => handleDeleteUser(u.userId)}
+                                            onClick={() => handleDeleteUser(u.id)}
                                             className="border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white px-2 py-1 rounded-md font-bold"
                                         >
                                             Xóa

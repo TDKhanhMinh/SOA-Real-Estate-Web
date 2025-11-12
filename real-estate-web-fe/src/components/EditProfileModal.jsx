@@ -3,7 +3,7 @@ import Button from "./Button";
 
 export default function EditProfileModal({ isOpen, onClose, onSave, initialData }) {
   const [form, setForm] = useState({
-    fullName: initialData?.fullName || "",
+    name: initialData?.name || "",
     email: initialData?.email || "",
     phone: initialData?.phone || "",
   });
@@ -14,7 +14,7 @@ export default function EditProfileModal({ isOpen, onClose, onSave, initialData 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(form); // gửi data ra ngoài
+    onSave(form);
     onClose(); 
   };
 
@@ -23,7 +23,6 @@ export default function EditProfileModal({ isOpen, onClose, onSave, initialData 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md">
-        {/* Header */}
         <div className="flex justify-between items-center border-b px-4 py-3">
           <h5 className="font-bold text-lg">Chỉnh sửa thông tin</h5>
           <Button
@@ -34,14 +33,13 @@ export default function EditProfileModal({ isOpen, onClose, onSave, initialData 
           </Button>
         </div>
 
-        {/* Body */}
         <form onSubmit={handleSubmit} className="p-4 space-y-3">
           <div>
             <label className="block font-semibold mb-1">Họ và tên</label>
             <input
               type="text"
-              name="fullName"
-              value={form.fullName}
+              name="name"
+              value={form.name}
               onChange={handleChange}
               className="w-full border px-3 py-2 rounded-full focus:ring-2 focus:ring-blue-400 outline-none"
             />
@@ -69,7 +67,6 @@ export default function EditProfileModal({ isOpen, onClose, onSave, initialData 
             />
           </div>
 
-          {/* Footer */}
           <div className="flex justify-end gap-2 pt-3 border-t">
             <Button
               type="Button"

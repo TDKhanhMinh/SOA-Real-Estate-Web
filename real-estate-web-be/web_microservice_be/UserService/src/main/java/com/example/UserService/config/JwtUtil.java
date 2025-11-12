@@ -16,10 +16,10 @@ public class JwtUtil {
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
-    public String generateToken(String username, String role) {
+    public String generateToken(Long userId, String role) {
         long EXPIRATION = 1000 * 60 * 60 * 24 * 7;
         return Jwts.builder()
-                .subject(username)
+                .subject(String.valueOf(userId))
                 .claim("role", role)
                 .issuedAt(new java.util.Date())
                 .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
