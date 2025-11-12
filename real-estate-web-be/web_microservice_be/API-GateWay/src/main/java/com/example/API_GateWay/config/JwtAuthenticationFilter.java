@@ -29,7 +29,8 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             "/user/login",
             "/user/forgot-password",
             "/user/reset-password",
-            "/user/verify-otp"
+            "/user/verify-otp",
+            "/subscription"
     );
 
     @Override
