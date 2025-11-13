@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             "/user/forgot-password",
             "/user/reset-password",
             "/user/verify-otp",
-            "/subscription"
+            "/subscription/"
     );
 
     @Override
@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             // Kiểm tra nếu đường dẫn là public thì không cần xác thực
             String path = exchange.getRequest().getURI().getPath();
             boolean isPublic = PUBLIC_PATHS.stream()
-                    .anyMatch(path::startsWith);
+                    .anyMatch(path::equals);
 
             if (isPublic) {
                 return chain.filter(exchange); // Nếu public, cho đi tiếp, không check token

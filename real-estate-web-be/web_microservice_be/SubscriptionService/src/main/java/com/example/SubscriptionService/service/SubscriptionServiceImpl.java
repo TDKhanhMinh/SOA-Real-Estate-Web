@@ -32,6 +32,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionMapper subscriptionMapper;
 
 
+    // Xử lý sự kiện tạo subscription basic cho user khi nhận được thông tin user mới tạo từ User Service
     @Override
     @RabbitListener(queues = "${rabbitmq.queue.user}")
     public void handleUserCreated(UserCreatedDTO userCreatedDTO) {
@@ -47,12 +48,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         log.info("Đã tạo subscription cho user: {}", userCreatedDTO.userId());
     }
 
-    @Override
+    // Tạo subscription basic cho user
     @Transactional
-    public boolean createBasicSubscription(Long userId) {
+    protected boolean createBasicSubscription(Long userId) {
         try {
             Optional<UserSubscription> existingUserSubscription = userSubscriptionRepository.findByUserId(userId);
 
+            // Nếu chưa có subscription, tạo mới gói basic
             if (existingUserSubscription.isEmpty()) {
                 UserSubscription newUserSubscription;
                 newUserSubscription = UserSubscription.builder()
@@ -72,6 +74,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 return false;
             }
 
+            // Cập nhật subscription hiện tại sang gói basic
             existingUserSubscription.get().setSubscriptionId(1L);
             existingUserSubscription.get().setStartDate(LocalDateTime.now());
             existingUserSubscription.get().setEndDate(LocalDateTime.now().plusYears(1000));
@@ -85,6 +88,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
+    // Lấy thông tin/benefit của một gói subscription CỤ THỂ
     @Override
     public SubscriptionDTO getSubscriptionDetails(Long subscriptionId) {
         Subscription subscription = subscriptionRepository.findByIdAndIsActive(subscriptionId, true)
@@ -100,6 +104,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 
+    // Lấy thông tin subscription của một USER CỤ THỂ
     @Override
     public UserSubscriptionDetailsDTO getUserSubscriptionDetails(Long userId) {
         Optional<UserSubscriptionDetailsDTO> userSubscriptionDetails =
@@ -115,22 +120,26 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 
+    // Lấy TẤT CẢ các gói subscription
     @Override
     public List<Subscription> getAllActiveSubscriptions() {
         return subscriptionRepository.findByIsActive(true);
     }
 
+    // Lay TẤT CẢ các gói subscription (Admin)
     @Override
     public List<Subscription> getAllSubscriptions() {
         return subscriptionRepository.findAll();
     }
 
+    // TẠO một gói subscription mới (Admin)
     @Override
     public Subscription createSubscriptionPackage(SubscriptionDTO subscriptionDTO) {
         Subscription subscription = subscriptionMapper.toSubscription(subscriptionDTO);
         return subscriptionRepository.save(subscription);
     }
 
+    // CẬP NHẬT thông tin một gói subscription (Admin)
     @Override
     @Transactional
     public Subscription updateSubscriptionPackage(Long subscriptionId, UpdateSubscriptionRequest updateSubscriptionRequest) {
@@ -153,6 +162,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
     }
 
+    // Hủy subscription hiện tại của user
     @Override
     @Transactional
     public void cancelUserSubscription(Long userId) {

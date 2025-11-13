@@ -13,29 +13,28 @@ import java.util.List;
 public interface SubscriptionService {
     void handleUserCreated(UserCreatedDTO userCreatedDTO);
 
-    boolean createBasicSubscription(Long userId);
 
-    // 1. Lấy thông tin/benefit của một gói subscription CỤ THỂ
+    // Lấy thông tin/benefit của một gói subscription CỤ THỂ
     SubscriptionDTO getSubscriptionDetails(Long subscriptionId);
 
-    // 2. Lấy thông tin subscription cụ thể cho admin
+    // Lấy thông tin subscription cụ thể cho admin
     Subscription getSubscriptionById(Long subscriptionId);
 
-    // 3. Lấy thông tin subscription của một USER CỤ THỂ
+    // Lấy thông tin subscription của một USER CỤ THỂ
     UserSubscriptionDetailsDTO getUserSubscriptionDetails(Long userId);
 
-    // 4. Lấy TẤT CẢ các gói subscription
+    // Lấy TẤT CẢ các gói subscription
     List<Subscription> getAllActiveSubscriptions();
 
-    // 5. Lay TẤT CẢ các gói subscription (Admin)
+    // Lấy TẤT CẢ các gói subscription (Admin)
     List<Subscription> getAllSubscriptions();
 
-    // 6. TẠO một gói subscription mới (Admin)
+    // TẠO một gói subscription mới (Admin)
     Subscription createSubscriptionPackage(SubscriptionDTO subscriptionDTO);
 
-    // 7. CẬP NHẬT thông tin một gói subscription (Admin)
+    // CẬP NHẬT thông tin một gói subscription (Admin)
     Subscription updateSubscriptionPackage(Long subscriptionId, UpdateSubscriptionRequest updateSubscriptionRequest);
 
-    // 8. Hủy subscription hiện tại của user
+    // Hủy subscription hiện tại của user
     void cancelUserSubscription(Long userId);
 }

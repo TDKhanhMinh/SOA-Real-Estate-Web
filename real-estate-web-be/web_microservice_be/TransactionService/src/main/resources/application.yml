@@ -1,5 +1,28 @@
 spring:
   application:
     name: transaction-service
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        concurrency: 3
+        max-concurrency: 10
+        retry:
+          enabled: true
+          max-attempts: 3
 server:
   port: 8082
+
+rabbitmq:
+  exchange:
+    name: "main_exchange"
+  queue:
+    user: "transaction_user_queue"
+  routing-key:
+    user-created: "user.created"
+    user-top-up: "transaction.top_up"
+    user-purchase-subscription: "transaction.purchase_subscription"
