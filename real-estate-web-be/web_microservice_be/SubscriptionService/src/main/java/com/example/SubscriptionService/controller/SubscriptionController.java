@@ -51,7 +51,7 @@ public class SubscriptionController {
     @GetMapping("/{subscriptionId}")
     public ResponseEntity<ApiResponse<SubscriptionDTO>> getSubscriptionDetails(@PathVariable Long subscriptionId) {
         try {
-            SubscriptionDTO dto = subscriptionService.getSubscriptionDetails(subscriptionId); //
+            SubscriptionDTO dto = subscriptionService.getSubscriptionDetails(subscriptionId);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(),
                     "Lấy chi tiết gói subscription thành công.", dto));
         } catch (AppException e) {
