@@ -34,6 +34,9 @@ public class UserController {
         return "Hello, secured world!";
     }
 
+    /**
+     *  Đăng ký người dùng mới
+     */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserDTO>> register(@Validated @RequestBody RegisterRequest registerRequest) {
         try{
@@ -57,6 +60,9 @@ public class UserController {
         }
     }
 
+    /**
+     *  Đăng nhập
+     */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
         try {
@@ -76,6 +82,9 @@ public class UserController {
         }
     }
 
+    /**
+     * [Admin] Lấy danh sách tất cả người dùng
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
@@ -96,6 +105,9 @@ public class UserController {
         }
     }
 
+    /**
+     * [Admin] Tìm kiếm người dùng theo tên hoặc email
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(@RequestParam(required = false) String keyword,
@@ -115,6 +127,9 @@ public class UserController {
         }
     }
 
+        /**
+        * [Admin] Lấy thông tin người dùng theo ID
+        */
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
@@ -132,6 +147,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Lấy thông tin profile của người dùng hiện tại
+     */
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserDTO>> getProfile(@AuthenticationPrincipal String userIdStr) {
         try{
@@ -157,6 +175,9 @@ public class UserController {
         }
     }
 
+    /**
+     * [Admin] Cập nhật thông tin người dùng theo ID
+     */
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(@Validated @RequestBody UpdateRequest updateRequest,
@@ -175,6 +196,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Cập nhật thông tin profile của người dùng hiện tại
+     */
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<UserDTO>> updateProfile(@Validated @RequestBody UpdateProfileRequest updateProfileRequest,
                                                                 @AuthenticationPrincipal String userIdStr) {
@@ -200,6 +224,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Đổi mật khẩu cho người dùng hiện tại
+     */
     @PutMapping("/change-password")
     public ResponseEntity<ApiResponse<Void>> changePassword(@Validated @RequestBody ChangePasswordRequest changePasswordRequest,
                                                             @AuthenticationPrincipal String userIdStr) {
@@ -224,6 +251,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Xác minh OTP
+     */
     @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponse<Void>> verifyOtp(@Validated @RequestBody VerifyOTPRequest verifyOtpRequest) {
         try {
@@ -240,6 +270,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Quên mật khẩu - Gửi email chứa OTP
+     */
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Validated @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         try {
@@ -256,6 +289,9 @@ public class UserController {
         }
     }
 
+    /**
+     * Đặt lại mật khẩu sử dụng OTP
+     */
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<Void>> resetPassword(@Validated @RequestBody ResetPasswordRequest resetPasswordRequest) {
         try {

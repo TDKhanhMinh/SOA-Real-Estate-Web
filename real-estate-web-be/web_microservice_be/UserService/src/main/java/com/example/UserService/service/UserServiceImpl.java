@@ -63,6 +63,8 @@ public class UserServiceImpl implements UserService {
     @Value("${rabbitmq.routing-key.user-created}")
     private String userCreatedRoutingKey;
 
+    // Register new user
+    @Override
     @Transactional
     public UserDTO register(User user) {
         if(userRepo.existsByEmail(user.getEmail())) {
@@ -98,8 +100,8 @@ public class UserServiceImpl implements UserService {
                     userCreatedDTO
             );
 
-            log.info("Sent registration message to RabbitMQ for user: {}", savedUser.getEmail());
-            log.info("Sent user created message to RabbitMQ for user: {}", savedUser.getEmail());
+            log.info("Sent 'registration' message to RabbitMQ for user: {}", savedUser.getEmail());
+            log.info("Sent 'user created' message to RabbitMQ for user: {} to create basic subscription and wallet", savedUser.getEmail());
         } catch (Exception e) {
             log.error("Failed to send registration message for user {}: {}", savedUser.getEmail(), e.getMessage());
             log.error("Failed to send user created message for user {}: {}", savedUser.getEmail(), e.getMessage());
@@ -109,6 +111,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // Forgot password - generate and send OTP
     @Override
     @Transactional
     public void forgotPassword(String email) {
@@ -143,6 +146,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    // Reset password using OTP
     @Override
     @Transactional
     public void resetPassword(String email, String otpCode, String newPassword) {
@@ -165,6 +169,7 @@ public class UserServiceImpl implements UserService {
         log.info("Đổi mật khẩu thành công cho user {}", email);
     }
 
+    // Verify OTP
     @Override
     public void verifyOTP(VerifyOTPRequest verifyOTPRequest) {
         User user = userRepo.findByEmail(verifyOTPRequest.getEmail())
@@ -180,6 +185,7 @@ public class UserServiceImpl implements UserService {
         log.info("Xác thực OTP thành công cho user {}", verifyOTPRequest.getEmail());
     }
 
+    // Get all users with pagination
     @Override
     public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
         Page<User> userPage = userRepo.findAll(pageable);
@@ -196,6 +202,7 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    // Search users by keyword (name or email)
     private Specification<User> searchByKeyword(String search) {
         return (root, query, criteriaBuilder) -> {
             if (!StringUtils.hasText(search)) {
@@ -218,6 +225,7 @@ public class UserServiceImpl implements UserService {
         };
     }
 
+    // Search users with pagination
     @Override
     public PageResponse<UserResponse> searchUsers(String search, Pageable pageable) {
         Specification<User> spec = searchByKeyword(search);
@@ -237,6 +245,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
+    // Get user by ID
     @Override
     public UserResponse getUserById(Long id) {
         User user = userRepo.findById(id)
@@ -244,6 +253,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
+    // Get user profile by ID
     @Override
     public UserDTO getUserProfile(Long id) {
         User user = userRepo.findById(id)
@@ -251,6 +261,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(user);
     }
 
+    // Update user by admin
     @Override
     @Transactional
     public UserResponse updateUser(UpdateRequest updateRequest, Long id) {
@@ -265,6 +276,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(userRepo.save(existingUser));
     }
 
+    // Update user profile
     @Override
     @Transactional
     public UserDTO updateProfile(UpdateProfileRequest updateProfileRequest, Long id) {
@@ -278,6 +290,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserDTO(userRepo.save(existingUser));
     }
 
+    // Verify user credentials and generate JWT
     @Override
     public AuthResponse verify(User user) {
         Authentication authentication = authenticationManager.authenticate(
@@ -300,8 +313,7 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-
-
+    // Change user password
     @Override
     @Transactional
     public void changePassword(Long id, ChangePasswordRequest changePasswordRequest) {

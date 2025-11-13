@@ -48,6 +48,9 @@ public class SubscriptionController {
         }
     }
 
+    /**
+     * Lấy chi tiết một gói subscription theo ID
+     */
     @GetMapping("/{subscriptionId}")
     public ResponseEntity<ApiResponse<SubscriptionDTO>> getSubscriptionDetails(@PathVariable Long subscriptionId) {
         try {
@@ -95,6 +98,9 @@ public class SubscriptionController {
         }
     }
 
+    /**
+     * Lấy thông tin subscription HIỆN TẠI của user
+     */
     @GetMapping("/user/")
     public ResponseEntity<ApiResponse<UserSubscriptionDetailsDTO>> getCurrentUserSubscription(
             @AuthenticationPrincipal String userIdStr) {
