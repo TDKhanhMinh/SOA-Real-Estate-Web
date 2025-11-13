@@ -14,7 +14,7 @@ export default function Sidebar() {
     useEffect(() => {
 
         fetchUserData();
-    });
+    }, []);
     const fetchUserData = async () => {
         setUser(localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : user);
     };
@@ -28,7 +28,7 @@ export default function Sidebar() {
             <div className="flex flex-col items-center bg-gray-100 rounded-lg p-4">
                 <img
                     className="rounded-full w-12 h-12 object-cover mb-2"
-                    src={user.avatarUrl||"https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
+                    src={user.avatarUrl || "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
                     alt="photo"
                 />
                 <span className="font-bold text-gray-800">{user.name}</span>
@@ -67,7 +67,7 @@ export default function Sidebar() {
             {/* Quản lý bài đăng */}
             <div className="mb-6">
                 <h6 className="font-semibold  gap-2 mb-2 bg-gray-100 p-2 rounded">
-                    📋 Quản lý bài đăng
+                    Quản lý bài đăng
                 </h6>
                 <div className="flex flex-col gap-2">
                     <Button to={"/post"} className="text-start hover:bg-gray-200 w-full inline">Đăng mới</Button>
@@ -79,7 +79,7 @@ export default function Sidebar() {
             {/* Quản lý tài khoản */}
             <div className="mb-6">
                 <h6 className="font-semibold  gap-2 mb-2 bg-gray-100 p-2 rounded">
-                    ⚙️ Quản lý tài khoản
+                    Quản lý tài khoản
                 </h6>
                 <div className="flex flex-col gap-2">
                     <Button className="text-start hover:bg-gray-200 w-full inline">Lịch sử nạp tiền</Button>
@@ -91,18 +91,18 @@ export default function Sidebar() {
             {/* Gói hội viên */}
             <div className="mb-6">
                 <h6 className="font-semibold  gap-2 mb-2 bg-gray-100 p-2 rounded">
-                    🎟️ Gói hội viên
+                    Gói hội viên
                 </h6>
                 <div className="flex flex-col gap-2">
                     <Button to={"/account/membership"} className="text-start hover:bg-gray-200 w-full inline">Đăng ký mua</Button>
-
+                    <Button to={"/account/my-subscription"} className="text-start hover:bg-gray-200 w-full inline">Gói đã mua</Button>
                 </div>
             </div>
 
             {/* Hướng dẫn */}
             <div>
                 <h6 className="font-semibold  gap-2 mb-2 bg-gray-100 p-2 rounded">
-                    📖 Hướng dẫn
+                    Hướng dẫn
                 </h6>
                 <div className="flex flex-col gap-2">
                     <Button className="text-start hover:bg-gray-200 w-full inline">Hướng dẫn sử dụng</Button>

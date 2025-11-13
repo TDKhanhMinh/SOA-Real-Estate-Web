@@ -23,6 +23,7 @@ import MembershipManagement from "../pages/Admin/Membership";
 import AuthLayout from "../layout/AuthLayout";
 import OtpVerification from "../pages/OtpVerification";
 import ResetPassword from "../pages/ResetPassword";
+import MySubscription from "../pages/MySubscription";
 
 
 const publicRoutes = createBrowserRouter([
@@ -63,6 +64,9 @@ const publicRoutes = createBrowserRouter([
             },
             {
                 path: 'support', element: <SupportCenter />
+            },
+            {
+                path: 'my-subscription', element: <MySubscription />
             },
 
         ],

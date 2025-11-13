@@ -1,17 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { HiX, HiTag, HiCurrencyDollar, HiClock, HiDocument, HiChartBar, HiStar, HiCalendar } from 'react-icons/hi';
 
-
-const CloseIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-
-
-// --- Dữ liệu giả lập ban đầu ---
-
-
-// --- Dữ liệu form ban đầu ---
 const initialFormData = {
     name: '',
     price: '',
@@ -22,25 +11,53 @@ const initialFormData = {
     postExpiryDays: '',
 };
 
+// ----------------------------------------------------
+// BƯỚC 1: DI CHUYỂN INPUTFIELD RA NGOÀI
+// Thêm props: formData, errors, handleChange
+// ----------------------------------------------------
+const InputField = ({ name, label, type = 'text', required = false, icon: Icon, formData, errors, handleChange, ...rest }) => (
+    <div className="flex flex-col group">
+        <label htmlFor={name} className="mb-2 text-sm font-semibold text-gray-700 flex items-center gap-2">
+            {Icon && <Icon className="w-4 h-4 text-gray-500" />}
+            {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="relative">
+            <input
+                type={type}
+                id={name}
+                name={name}
+                value={formData[name]}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 border-2 rounded-xl shadow-sm text-sm 
+                    transition-all duration-200
+                    focus:outline-none focus:ring-2 focus:ring-offset-1
+                    hover:border-gray-400
+                    ${errors[name]
+                        ? 'border-red-400 focus:ring-red-400 bg-red-50'
+                        : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500 bg-white'}`}
+                {...rest}
+            />
+            {errors[name] && (
+                <div className="absolute -bottom-6 left-0 flex items-center gap-1 text-xs text-red-600 animate-fade-in">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors[name]}
+                </div>
+            )}
+        </div>
+    </div>
+);
 
-/**
- * Component Form Modal
- * @param {object} props
- * @param {boolean} props.show
- * @param {function} props.onClose
- * @param {function} props.onSubmit
- * @param {object | null} props.initialData
- */
+
 export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) {
     const [formData, setFormData] = useState(initialFormData);
     const [errors, setErrors] = useState({});
 
-    // Sử dụng useMemo để xác định tiêu đề modal
     const modalTitle = useMemo(() => {
         return initialData ? 'Chỉnh sửa Gói Subscription' : 'Thêm Gói Subscription Mới';
     }, [initialData]);
 
-    // Cập nhật form data khi `initialData` thay đổi (khi mở modal để edit)
     React.useEffect(() => {
         if (show) {
             if (initialData) {
@@ -48,21 +65,16 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
             } else {
                 setFormData(initialFormData);
             }
-            setErrors({}); // Xóa lỗi cũ khi mở modal
+            setErrors({});
         }
     }, [show, initialData]);
 
-    /**
-     * Xử lý thay đổi input
-     * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e
-     */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
             [name]: value,
         }));
-        // Xóa lỗi khi người dùng bắt đầu nhập
         if (errors[name]) {
             setErrors((prev) => ({
                 ...prev,
@@ -71,22 +83,17 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
         }
     };
 
-    /**
-     * Xác thực form
-     * @returns {boolean} - true nếu form hợp lệ
-     */
     const validateForm = () => {
+        // ... (Logic validate giữ nguyên)
         const newErrors = {};
         const { name, price, duration, description, maxPost, priority, postExpiryDays } = formData;
 
-        // 1. Tên gói (name)
         if (!name) {
             newErrors.name = "Tên gói không được để trống";
         } else if (name.length > 100) {
             newErrors.name = "Tên gói không được vượt quá 100 ký tự";
         }
 
-        // 2. Giá (price)
         const priceNum = parseFloat(price);
         if (price === '' || price == null) {
             newErrors.price = "Giá không được để trống";
@@ -94,7 +101,6 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
             newErrors.price = "Giá phải là số dương hoặc bằng 0";
         }
 
-        // 3. Thời hạn (duration)
         const durationNum = parseInt(duration, 10);
         if (duration === '' || duration == null) {
             newErrors.duration = "Thời hạn không được để trống";
@@ -102,12 +108,10 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
             newErrors.duration = "Thời hạn (số ngày) phải là số dương";
         }
 
-        // 4. Mô tả (description)
         if (description && description.length > 500) {
             newErrors.description = "Mô tả không được vượt quá 500 ký tự";
         }
 
-        // 5. Số lượng bài đăng (maxPost)
         const maxPostNum = parseInt(maxPost, 10);
         if (maxPost === '' || maxPost == null) {
             newErrors.maxPost = "Số lượng bài đăng tối đa không được để trống";
@@ -115,7 +119,6 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
             newErrors.maxPost = "Số lượng bài đăng tối đa phải ít nhất là 1";
         }
 
-        // 6. Độ ưu tiên (priority)
         const priorityNum = parseInt(priority, 10);
         if (priority === '' || priority == null) {
             newErrors.priority = "Độ ưu tiên không được để trống";
@@ -123,7 +126,6 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
             newErrors.priority = "Độ ưu tiên phải là số dương";
         }
 
-        // 7. Số ngày hết hạn (postExpiryDays)
         const postExpiryDaysNum = parseInt(postExpiryDays, 10);
         if (postExpiryDays === '' || postExpiryDays == null) {
             newErrors.postExpiryDays = "Số ngày hết hạn bài đăng không được để trống";
@@ -135,14 +137,9 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
         return Object.keys(newErrors).length === 0;
     };
 
-    /**
-     * Xử lý submit form
-     * @param {React.FormEvent<HTMLFormElement>} e
-     */
     const handleSubmit = (e) => {
         e.preventDefault();
         if (validateForm()) {
-            // Chuyển đổi các giá trị số trước khi gửi
             const dataToSubmit = {
                 ...formData,
                 price: parseFloat(formData.price),
@@ -155,72 +152,67 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
         }
     };
 
-    // Input field component để tái sử dụng
-    const InputField = ({ name, label, type = 'text', required = false, ...rest }) => (
-        <div className="flex flex-col">
-            <label htmlFor={name} className="mb-1 text-sm font-medium text-gray-700">
-                {label} {required && <span className="text-red-500">*</span>}
-            </label>
-            <input
-                type={type}
-                id={name}
-                name={name}
-                value={formData[name]}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm text-sm 
-                    focus:outline-none focus:ring-2 focus:ring-blue-500
-                    ${errors[name] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
-                {...rest}
-            />
-            {errors[name] && <p className="mt-1 text-xs text-red-600">{errors[name]}</p>}
-        </div>
-    );
 
     if (!show) return null;
 
     return (
-        // Lớp phủ (Overlay)
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300">
-
-            {/* Nội dung Modal */}
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl m-4 transform transition-all duration-300 scale-100">
-                <form onSubmit={handleSubmit}>
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-5 border-b border-gray-200">
-                        <h3 className="text-xl font-semibold text-gray-800">{modalTitle}</h3>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                            <CloseIcon />
-                        </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 p-4">
+            <div
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl transform transition-all duration-300 scale-100 max-h-[95vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-2xl">
+                    <div>
+                        <h3 className="text-2xl font-bold text-gray-800">{modalTitle}</h3>
+                        <p className="text-sm text-gray-600 mt-1">Điền thông tin chi tiết gói subscription</p>
                     </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="text-gray-400 hover:text-gray-600 hover:bg-white rounded-full p-2 transition-all duration-200 hover:rotate-90"
+                    >
+                        <HiX className="w-6 h-6" />
+                    </button>
+                </div>
 
-                    {/* Body - Form Fields */}
-                    <div className="p-6 max-h-[70vh] overflow-y-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            {/* Tên gói */}
-                            <InputField name="name" label="Tên gói" required />
+                <div className="flex-1 overflow-y-auto px-6 py-6">
+                    <div className="space-y-8">
+                        <div className="space-y-5">
+                            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                                <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+                                <h4 className="text-lg font-semibold text-gray-800">Thông tin cơ bản</h4>
+                            </div>
 
-                            {/* Giá */}
-                            <InputField name="price" label="Giá (USD)" type="number" step="0.01" min="0" required />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <InputField
+                                    name="name"
+                                    label="Tên gói"
+                                    icon={HiTag}
+                                    required
+                                    placeholder="VD: Premium, Basic, Enterprise"
+                                    formData={formData}
+                                    errors={errors}
+                                    handleChange={handleChange}
+                                />
 
-                            {/* Thời hạn */}
-                            <InputField name="duration" label="Thời hạn (ngày)" type="number" step="1" min="1" required />
+                                <InputField
+                                    name="price"
+                                    label="Giá (VND)"
+                                    icon={HiCurrencyDollar}
+                                    type="number"
+                                    step="1000"
+                                    min="0"
+                                    required
+                                    placeholder="VD: 299000"
+                                    formData={formData}
+                                    errors={errors}
+                                    handleChange={handleChange}
+                                />
+                            </div>
 
-                            {/* Số lượng bài đăng tối đa */}
-                            <InputField name="maxPost" label="Số bài đăng tối đa" type="number" step="1" min="1" required />
-
-                            {/* Độ ưu tiên */}
-                            <InputField name="priority" label="Độ ưu tiên" type="number" step="1" min="1" required />
-
-                            {/* Số ngày hết hạn bài đăng */}
-                            <InputField name="postExpiryDays" label="Số ngày hết hạn bài đăng" type="number" step="1" min="1" required />
-
-                            {/* Mô tả (full width) */}
                             <div className="md:col-span-2">
-                                <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
+                                <label htmlFor="description" className="mb-2 text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <HiDocument className="w-4 h-4 text-gray-500" />
                                     Mô tả
                                 </label>
                                 <textarea
@@ -229,33 +221,114 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
                                     rows="4"
                                     value={formData.description}
                                     onChange={handleChange}
-                                    className={`w-full px-3 py-2 border rounded-md shadow-sm text-sm
-                              focus:outline-none focus:ring-2 focus:ring-blue-500
-                              ${errors.description ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                                    placeholder="Mô tả chi tiết về gói subscription..."
+                                    className={`w-full px-4 py-3 border-2 rounded-xl shadow-sm text-sm
+                                        transition-all duration-200
+                                        focus:outline-none focus:ring-2 focus:ring-offset-1
+                                        hover:border-gray-400 resize-none
+                                        ${errors.description
+                                            ? 'border-red-400 focus:ring-red-400 bg-red-50'
+                                            : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500 bg-white'}`}
                                 ></textarea>
-                                {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description}</p>}
+                                {errors.description && (
+                                    <p className="mt-2 flex items-center gap-1 text-xs text-red-600">
+                                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        {errors.description}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-5">
+                            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                                <div className="w-1 h-6 bg-green-500 rounded-full"></div>
+                                <h4 className="text-lg font-semibold text-gray-800">Cấu hình gói</h4>
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <InputField
+                                    name="duration"
+                                    label="Thời hạn (ngày)"
+                                    icon={HiClock}
+                                    type="number"
+                                    step="1"
+                                    min="1"
+                                    required
+                                    placeholder="VD: 30"
+                                    formData={formData}
+                                    errors={errors}
+                                    handleChange={handleChange}
+                                />
+
+                                <InputField
+                                    name="maxPost"
+                                    label="Số bài đăng tối đa"
+                                    icon={HiChartBar}
+                                    type="number"
+                                    step="1"
+                                    min="1"
+                                    required
+                                    placeholder="VD: 20"
+                                    formData={formData}
+                                    errors={errors}
+                                    handleChange={handleChange}
+                                />
+
+                                <InputField
+                                    name="priority"
+                                    label="Độ ưu tiên"
+                                    icon={HiStar}
+                                    type="number"
+                                    step="1"
+                                    min="1"
+                                    required
+                                    placeholder="VD: 5"
+                                    formData={formData}
+                                    errors={errors}
+                                    handleChange={handleChange}
+                                />
+
+                                <InputField
+                                    name="postExpiryDays"
+                                    label="Số ngày hết hạn bài đăng"
+                                    icon={HiCalendar}
+                                    type="number"
+                                    step="1"
+                                    min="1"
+                                    required
+                                    placeholder="VD: 30"
+                                    formData={formData}
+                                    errors={errors}
+                                    handleChange={handleChange}
+                                />
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Footer - Actions */}
-                    <div className="flex items-center justify-end p-5 border-t border-gray-200 space-x-3">
+                <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
+                    <p className="text-xs text-gray-500">
+                        <span className="text-red-500">*</span> Trường bắt buộc
+                    </p>
+                    <div className="flex items-center gap-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-200 text-gray-800 text-sm font-medium rounded-md shadow-sm hover:bg-gray-300 transition-colors"
+                            className="px-6 py-2.5 bg-white border-2 border-gray-300 text-gray-700 text-sm font-semibold rounded-xl shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
                         >
                             Hủy
                         </button>
                         <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 transition-colors"
+                            type="button"
+                            onClick={handleSubmit}
+                            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
                         >
                             Lưu thay đổi
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );
