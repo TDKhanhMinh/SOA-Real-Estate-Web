@@ -33,7 +33,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 
     // Xử lý sự kiện tạo subscription basic cho user khi nhận được thông tin user mới tạo từ User Service
-    @Override
     @RabbitListener(queues = "${rabbitmq.queue.user}")
     public void handleUserCreated(UserCreatedDTO userCreatedDTO) {
         log.info("Nhận được sự kiện User Created: {}", userCreatedDTO);

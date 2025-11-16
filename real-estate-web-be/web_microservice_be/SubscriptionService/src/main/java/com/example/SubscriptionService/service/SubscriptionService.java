@@ -11,8 +11,6 @@ import com.example.SubscriptionService.response.ApiResponse;
 import java.util.List;
 
 public interface SubscriptionService {
-    void handleUserCreated(UserCreatedDTO userCreatedDTO);
-
 
     // Lấy thông tin/benefit của một gói subscription CỤ THỂ
     SubscriptionDTO getSubscriptionDetails(Long subscriptionId);

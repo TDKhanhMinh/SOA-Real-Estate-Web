@@ -5,23 +5,23 @@ import com.example.SubscriptionService.dto.UserSubscriptionDetailsDTO;
 import com.example.SubscriptionService.exception.AppException;
 import com.example.SubscriptionService.model.Subscription;
 import com.example.SubscriptionService.request.UpdateSubscriptionRequest;
-import com.example.SubscriptionService.response.ApiResponse; // Đảm bảo bạn có file ApiResponse này
+import com.example.SubscriptionService.response.ApiResponse;
 import com.example.SubscriptionService.service.SubscriptionService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // Thêm security
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated; // Thêm validation
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/subscription")
-@AllArgsConstructor // Sử dụng @AllArgsConstructor giống như UserController
+@RequiredArgsConstructor
 public class SubscriptionController {
 
     // Setup Logger giống như UserController
