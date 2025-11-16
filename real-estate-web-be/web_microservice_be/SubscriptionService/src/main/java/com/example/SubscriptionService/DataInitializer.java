@@ -32,6 +32,7 @@ public class DataInitializer {
                             .maxPost(5) // Tối đa 5 bài viết
                             .postExpiryDays(7) // Bài viết hết hạn sau 7 ngày
                             .priority(5) // Ưu tiên thấp nhất
+                            .isActive(true)
                             .build()
             );
 
@@ -44,6 +45,7 @@ public class DataInitializer {
                             .maxPost(50) // Tối đa 30 bài viết
                             .postExpiryDays(30) // Bài viết hết hạn sau 30 ngày
                             .priority(3) // Ưu tiên trung bình
+                            .isActive(true)
                             .build()
             );
 
@@ -55,6 +57,7 @@ public class DataInitializer {
                             .duration(30) // 30 ngày
                             .maxPost(200) // Tối đa 100 bài viết
                             .postExpiryDays(90) // Bài viết hết hạn sau 90 ngày
+                            .isActive(true)
                             .priority(1) // Ưu tiên cao nhất
                             .build()
             );
