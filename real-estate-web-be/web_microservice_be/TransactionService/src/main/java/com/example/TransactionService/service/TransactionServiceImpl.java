@@ -1,5 +1,6 @@
 package com.example.TransactionService.service;
 
+import com.example.TransactionService.dto.EmailNotificationDTO;
 import com.example.TransactionService.dto.UserCreatedDTO;
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.model.Wallet;
@@ -9,10 +10,13 @@ import com.example.TransactionService.request.TopUpRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -21,6 +25,15 @@ import java.util.Optional;
 public class TransactionServiceImpl implements TransactionService {
     private final WalletRepository walletRepository;
     private final TransactionRepository transactionRepository;
+    private final RabbitTemplate rabbitTemplate;
+
+    // RabbitMQ Config
+    @Value("${rabbitmq.exchange.name}")
+    private String exchangeName;
+
+    @Value("${rabbitmq.routing-key.user-top-up}")
+    private String transactionTopUpRoutingKey;
+
 
     @Override
     @RabbitListener(queues = "${rabbitmq.queue.user}")
@@ -28,7 +41,7 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Nhận được sự kiện User Created: {}", userCreatedDTO);
 
         try {
-            Wallet check = createWallet(userCreatedDTO.userId());
+            Wallet check = createWallet(userCreatedDTO.userId(), userCreatedDTO.email());
             log.info("Đã tạo wallet cho user: {}", userCreatedDTO.userId());
         } catch (Exception e){
             log.info("Lỗi khi tạo wallet cho user: {}", userCreatedDTO.userId());
@@ -36,12 +49,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public Wallet topUpWallet(Long userId, TopUpRequest topUpRequest) {
         log.info("Xử lý nạp tiền cho user {}: {}", userId, topUpRequest.amount());
 
         // 1. Tìm ví của user, nếu chưa có thì tạo mới
         Wallet userWallet = walletRepository.findByUserId(userId)
-                .orElseGet(() -> createWallet(userId));
+                .orElseGet(() -> createWallet(userId, topUpRequest.email()));
 
         // 2. Tạo giao dịch (Transaction) ở trạng thái PENDING
         Transaction transaction = Transaction.builder()
@@ -53,6 +67,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .paymentMethod(topUpRequest.paymentMethod())
                 .status(Transaction.Status.PENDING) //
                 .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
         transactionRepository.save(transaction);
@@ -68,15 +83,43 @@ public class TransactionServiceImpl implements TransactionService {
 
         // 5. Cập nhật giao dịch sang COMPLETED
         transaction.setStatus(Transaction.Status.COMPLETED); //
-        transactionRepository.save(transaction);
+        transaction.setUpdatedAt(LocalDateTime.now());
+        Transaction savedTransaction =  transactionRepository.save(transaction);
 
         log.info("Đã nạp tiền thành công cho user {}, số dư mới: {}", userId, savedWallet.getBalance());
+
+        try{
+            EmailNotificationDTO emailNotificationDTO = new EmailNotificationDTO(
+                    savedTransaction.getEmail(),
+                    "Top up successful",
+                    "TOP_UP_EMAIL",
+                    savedTransaction.getUserId(),
+                    Map.of("user_name", savedTransaction.getUserName(),
+                            "transaction_id", savedTransaction.getId(),
+                            "amount", savedTransaction.getAmount(),
+                            "payment_method", savedTransaction.getPaymentMethod(),
+                            "updatedAt", savedTransaction.getUpdatedAt(),
+                            "new_balance", savedWallet.getBalance()
+                            )
+            );
+
+            rabbitTemplate.convertAndSend(
+                    exchangeName,
+                    transactionTopUpRoutingKey,
+                    emailNotificationDTO
+            );
+
+            log.info("Sent 'top up' message to RabbitMQ for user: {}", savedTransaction.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send 'top up' message for user {}: {}", savedTransaction.getEmail(), e.getMessage());
+        }
+
         return savedWallet;
     }
 
 
     @Transactional
-    protected Wallet createWallet(Long userId) {
+    protected Wallet createWallet(Long userId, String email) {
         try {
             Optional<Wallet> existingWallet = walletRepository.findByUserId(userId);
 
@@ -87,6 +130,7 @@ public class TransactionServiceImpl implements TransactionService {
 
             Wallet newWallet = Wallet.builder()
                     .userId(userId)
+                    .email(email)
                     .balance(0.0)
                     .updatedAt(LocalDateTime.now())
                     .build();

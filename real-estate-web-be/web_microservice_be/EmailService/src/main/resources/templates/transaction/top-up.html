@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>Nạp tiền thành công</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        .email-wrapper {
+            padding: 40px 0;
+            width: 100%;
+            background-color: #f4f6f9;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #0d6efd;
+            padding: 28px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 30px 40px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+
+        .info-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0 25px 0;
+        }
+
+        .info-item {
+            margin: 8px 0;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .value {
+            color: #111;
+            font-weight: 600;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            color: #777;
+            font-size: 13px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-wrapper">
+    <div class="email-container">
+
+        <div class="header">
+            <h1>Nạp tiền thành công</h1>
+        </div>
+
+        <div class="content">
+
+            <p>Xin chào <strong th:text="${data.user_name}">Người dùng</strong>,</p>
+
+            <p>
+                Giao dịch nạp tiền vào ví của bạn đã được xử lý
+                <strong>thành công</strong>. Dưới đây là thông tin chi tiết:
+            </p>
+
+            <div class="section-title">Thông tin giao dịch</div>
+
+            <div class="info-box">
+                <div class="info-item">
+                    <span class="label">Mã giao dịch:</span>
+                    <span class="value" th:text="${data.transaction_id}">#TX12345</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Số tiền:</span>
+                    <span class="value" th:text="${data.amount}">Amount</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Phương thức thanh toán:</span>
+                    <span class="value" th:text="${data.payment_method}">Payment_method</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Thời gian:</span>
+                    <span class="value" th:text="${data.updatedAt}">Timestamp</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Số dư mới:</span>
+                    <span class="value" th:text="${data.new_balance}">New Balance</span>
+                </div>
+            </div>
+
+            <p>
+                Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.
+                Nếu bạn cần hỗ trợ thêm, đừng ngần ngại liên hệ với đội ngũ CSKH.
+            </p>
+
+            <p style="margin-top: 30px;">
+                Trân trọng,<br />
+                <strong>Đội ngũ Hỗ trợ</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            © 2025 Hệ thống của chúng tôi. Mọi quyền được bảo lưu.
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

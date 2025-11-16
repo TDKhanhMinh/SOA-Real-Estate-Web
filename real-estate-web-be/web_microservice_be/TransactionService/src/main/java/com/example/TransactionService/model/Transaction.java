@@ -48,6 +48,9 @@ public class Transaction {
     @Column(name = "createdAt", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "updatedAt", nullable = false)
+    private LocalDateTime updatedAt;
+
     public enum TransactionType {
         TOP_UP,
         PURCHASE_SUBSCRIPTION

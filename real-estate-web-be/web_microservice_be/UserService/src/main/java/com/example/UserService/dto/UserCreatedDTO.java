@@ -1,5 +1,6 @@
 package com.example.UserService.dto;
 
 public record UserCreatedDTO(
-        Long userId
+        Long userId,
+        String email
 ) { }

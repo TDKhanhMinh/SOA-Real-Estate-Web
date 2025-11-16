@@ -38,10 +38,12 @@ rabbitmq:
     user: "email_user_queue"
     transaction: "email_transaction_queue"
     property: "email_property_queue"
+    subscription: "email_subscription_queue"
   routing-key:
     user: "user.#"
     transaction: "transaction.#"
     property: "property.#"
+    subscription: "subscription.#"
 
 
 

@@ -21,6 +21,8 @@ public class Wallet {
     private Long id;
     @Column(name = "user_id", nullable = false)
     private Long userId;
+    @Column(name = "email", nullable = false)
+    private String email;
     @Column(name = "balance", nullable = false)
     private Double balance;
     @Column(name = "updatedAt", nullable = false)

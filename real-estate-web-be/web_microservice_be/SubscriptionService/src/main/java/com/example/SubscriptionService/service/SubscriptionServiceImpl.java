@@ -38,19 +38,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public void handleUserCreated(UserCreatedDTO userCreatedDTO) {
         log.info("Nhận được sự kiện User Created: {}", userCreatedDTO);
 
-        boolean check = createBasicSubscription(userCreatedDTO.userId());
+        boolean check = createBasicSubscription(userCreatedDTO.userId(), userCreatedDTO.email());
 
         if (!check) {
             log.info("User {} đã có subscription, không tạo mới. Hoặc lỗi khi tạo subscription cho user", userCreatedDTO.userId());
             return;
         }
 
-        log.info("Đã tạo subscription cho user: {}", userCreatedDTO.userId());
+        log.info("Đã tạo subscription cho user: id: {}, email: {}", userCreatedDTO.userId(), userCreatedDTO.email());
     }
 
     // Tạo subscription basic cho user
     @Transactional
-    protected boolean createBasicSubscription(Long userId) {
+    protected boolean createBasicSubscription(Long userId, String email) {
         try {
             Optional<UserSubscription> existingUserSubscription = userSubscriptionRepository.findByUserId(userId);
 
@@ -59,6 +59,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 UserSubscription newUserSubscription;
                 newUserSubscription = UserSubscription.builder()
                         .userId(userId)
+                        .email(email)
                         .subscriptionId(1L) // Gói basic có ID là 1
                         .startDate(LocalDateTime.now())
                         .endDate(LocalDateTime.now().plusYears(1000)) // Giả sử gói basic không hết hạn
@@ -114,7 +115,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             return userSubscriptionDetails.get();
         }
 
-        createBasicSubscription(userId);
+        createBasicSubscription(userId, "");
 
         return userSubscriptionRepository.findUserSubscriptionDetails(userId, UserSubscription.Status.ACTIVE)
                 .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
@@ -167,7 +168,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public void cancelUserSubscription(Long userId) {
 
-        boolean check = createBasicSubscription(userId);
+        boolean check = createBasicSubscription(userId, "");
         if (!check) {
             log.info("User {} đã có basic subscription, không cần hủy nữa.", userId);
             return;

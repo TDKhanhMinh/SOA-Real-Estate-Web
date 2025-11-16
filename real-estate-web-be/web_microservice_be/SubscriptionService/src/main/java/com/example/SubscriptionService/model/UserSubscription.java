@@ -23,6 +23,9 @@ public class UserSubscription {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "email")
+    private String email;
+
     @Column(name = "subscription_id")
     private Long subscriptionId;
 

@@ -3,6 +3,7 @@ package com.example.EmailService.service;
 import com.example.EmailService.dto.EmailNotificationDTO;
 import com.example.EmailService.model.Email;
 import com.example.EmailService.repository.EmailRepository;
+import com.example.EmailService.utils.EmailFormatUtils;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -22,7 +27,7 @@ public class EmailService {
 
     private final JavaMailSender emailSender;
     private final EmailRepository emailRepository;
-    private final TemplateEngine templateEngine; // <-- Thêm TemplateEngine
+    private final TemplateEngine templateEngine;
 
     private boolean sendEmail(String to, String subject, String body) {
         log.info("Đang gửi email tới: {}, chủ đề: {}", to, subject);
@@ -92,11 +97,40 @@ public class EmailService {
         }
     }
 
-    // (Bạn cũng có thể thêm các listener cho 2 queue còn lại)
     @RabbitListener(queues = "${rabbitmq.queue.transaction}")
     public void handleTransactionEmail(EmailNotificationDTO emailDto) {
-        log.info("Nhận tác vụ email GIAO DỊCH: {}", emailDto.to());
-        // ... (Tương tự, tạo template cho giao dịch)
+        log.info("Nhận tác vụ email GIAO DỊCH: {} cho {}", emailDto.template(), emailDto.to());
+
+        String body = "";
+        String subject = emailDto.subject();
+
+        // Format data cho template
+        Map<String, Object> raw_data = emailDto.data();
+
+        Map<String, Object> formatted = new HashMap<>(raw_data);
+
+        formatted.put("amount", EmailFormatUtils.vnd(raw_data.get("amount")));
+        formatted.put("new_balance", EmailFormatUtils.vnd(raw_data.get("new_balance")));
+        formatted.put("updatedAt", EmailFormatUtils.date((LocalDateTime) raw_data.get("updatedAt")));
+
+        Context context = new Context();
+        context.setVariable("data", formatted);
+        context.setVariable("to", emailDto.to());
+
+        switch (emailDto.template()) {
+            case "TOP_UP_EMAIL":
+                body = templateEngine.process("transaction/top-up", context);
+                break;
+            default:
+                log.error("Không nhận dạng được template: {}", emailDto.template());
+                return;
+        }
+
+        boolean sent = sendEmail(emailDto.to(), subject, body);
+
+        if (sent) {
+            saveEmailLog(emailDto, body);
+        }
     }
 
     @RabbitListener(queues = "${rabbitmq.queue.property}")
