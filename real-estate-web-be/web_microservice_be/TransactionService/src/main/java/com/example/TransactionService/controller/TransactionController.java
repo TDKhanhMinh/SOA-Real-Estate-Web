@@ -117,6 +117,7 @@ public class TransactionController {
      *
      * VD: /admin/top-up/all?search=test@gmail.com&status=COMPLETED&startDate=2023-01-01&sort=amount,desc
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/top-up/all")
     public ResponseEntity<ApiResponse<Page<Transaction>>> searchAllTopUpTransactions(
             @RequestParam(required = false) String search,
