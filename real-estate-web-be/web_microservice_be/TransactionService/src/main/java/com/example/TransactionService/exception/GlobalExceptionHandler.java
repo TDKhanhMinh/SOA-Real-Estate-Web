@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Objects;
 
@@ -48,6 +49,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiResponse<Object>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String name = ex.getName(); // Tên tham số (vd: "status")
+        String requiredType = ex.getRequiredType().getSimpleName(); // Kiểu dữ liệu (vd: "Status")
+        Object value = ex.getValue(); // Giá trị sai (vd: "INVALID_STATUS")
+
+        String message = String.format("Tham số '%s' không hợp lệ. Giá trị '%s' không thể chuyển thành '%s'.",
+                name, value, requiredType);
+
+        ApiResponse<Object> apiResponse = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), message, null);
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
     private ResponseEntity<ApiResponse<?>> buildErrorResponse(ErrorCode errorCode, HttpStatus status) {
         ApiResponse<?> response = ApiResponse.builder()
                 .statusCode(errorCode.getCode())
@@ -55,4 +70,6 @@ public class GlobalExceptionHandler {
                 .build();
         return ResponseEntity.status(status).body(response);
     }
+
+
 }
