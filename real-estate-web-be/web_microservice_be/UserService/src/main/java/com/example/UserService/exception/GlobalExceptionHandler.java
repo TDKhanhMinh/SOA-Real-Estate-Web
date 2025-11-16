@@ -1,6 +1,7 @@
 package com.example.UserService.exception;
 
 import com.example.UserService.response.ApiResponse;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -36,6 +37,15 @@ public class GlobalExceptionHandler {
         } catch (IllegalArgumentException ignored) {}
 
         return buildErrorResponse(errorCode, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ApiResponse<?>> handleValidationException(PropertyReferenceException e) {
+        ApiResponse<?> response = ApiResponse.builder()
+                .statusCode(ErrorCode.INVALID_KEY.getCode())
+                .message("Invalid sort key: " + e.getPropertyName())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     private ResponseEntity<ApiResponse<?>> buildErrorResponse(ErrorCode errorCode, HttpStatus status) {
