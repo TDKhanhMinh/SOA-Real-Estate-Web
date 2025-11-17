@@ -136,6 +136,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public Wallet getWalletByUserId(Long userId) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_FOUND));

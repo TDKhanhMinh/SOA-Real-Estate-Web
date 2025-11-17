@@ -5,6 +5,10 @@ export const userService = {
         const res = await http.get("user/");
         return res.data.data.data;
     },
+    getUserById: async (id) => {
+        const res = await http.get(`user/${id}`);
+        return res.data.data;
+    },
     getProfile: async () => {
         const res = await http.get("user/profile");
         return res.data.data;
