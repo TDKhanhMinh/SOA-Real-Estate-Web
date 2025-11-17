@@ -4,6 +4,7 @@ import com.example.SubscriptionService.dto.SubscriptionDTO;
 import com.example.SubscriptionService.dto.UserCreatedDTO;
 import com.example.SubscriptionService.dto.UserSubscriptionDetailsDTO;
 import com.example.SubscriptionService.model.Subscription;
+import com.example.SubscriptionService.model.SubscriptionOrder;
 import com.example.SubscriptionService.model.UserSubscription;
 import com.example.SubscriptionService.request.UpdateSubscriptionRequest;
 import com.example.SubscriptionService.response.ApiResponse;
@@ -35,4 +36,7 @@ public interface SubscriptionService {
 
     // Hủy subscription hiện tại của user
     void cancelUserSubscription(Long userId);
+
+    // Mua gói subscription
+    SubscriptionOrder purchaseSubscription(Long userId, Long subscriptionId);
 }

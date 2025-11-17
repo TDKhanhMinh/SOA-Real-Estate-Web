@@ -22,7 +22,9 @@ public enum ErrorCode {
     OTP_EXPIRED(1007, "OTP code has expired"),
 
     SUBSCRIPTION_NOT_FOUND(2001, "Subscription package not found"),
-    CANNOT_INACTIVE_BASIC_SUBSCRIPTION(2002, "Cannot inactivate basic subscription package");
+    CANNOT_INACTIVE_BASIC_SUBSCRIPTION(2002, "Cannot inactivate basic subscription package"),
+    CANNOT_PURCHASE_DIFFERENT_PLAN(2003, "Cannot purchase different subscription plan while current plan is still active"),
+    TRANSACTION_FAILED(2004, "Transaction failed");
 
     private final int code;
     private final String message;

@@ -2,7 +2,9 @@ package com.example.TransactionService.service;
 
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.model.Wallet;
+import com.example.TransactionService.request.PurchaseRequest;
 import com.example.TransactionService.request.TopUpRequest;
+import com.example.TransactionService.response.PurchaseResponse;
 import com.example.TransactionService.response.TopUpResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,4 +31,6 @@ public interface TransactionService {
             LocalDate endDate,
             Pageable pageable
     );
+
+    PurchaseResponse processPurchase(Long userId, PurchaseRequest purchaseRequest);
 }

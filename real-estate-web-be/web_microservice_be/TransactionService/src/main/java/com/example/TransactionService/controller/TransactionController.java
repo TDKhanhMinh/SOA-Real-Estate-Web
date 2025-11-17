@@ -1,9 +1,12 @@
 package com.example.TransactionService.controller;
 
+import com.example.TransactionService.exception.AppException;
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.model.Wallet;
+import com.example.TransactionService.request.PurchaseRequest;
 import com.example.TransactionService.request.TopUpRequest;
 import com.example.TransactionService.response.ApiResponse;
+import com.example.TransactionService.response.PurchaseResponse;
 import com.example.TransactionService.response.TopUpResponse;
 import com.example.TransactionService.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -41,14 +44,16 @@ public class TransactionController {
     @PostMapping("/top-up")
     public ResponseEntity<ApiResponse<TopUpResponse>> topUpAccount(@AuthenticationPrincipal String userIdStr, @Validated @RequestBody TopUpRequest topUpRequest) {
         logger.info("Nhận yêu cầu nạp tiền vào tài khoản"+userIdStr);
-        if (userIdStr == null) {
+        Long id;
+        try {
+            id = Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Không tìm thấy thông tin người dùng", null));
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid user ID", null));
         }
-        Long userId = Long.parseLong(userIdStr);
 
         try {
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Nạp tiền thành công", transactionService.topUpWallet(userId, topUpRequest)));
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Nạp tiền thành công", transactionService.topUpWallet(id, topUpRequest)));
         } catch (IllegalArgumentException e) {
             logger.error("Lỗi khi nạp tiền vào tài khoản: {}", e.getMessage());
             ApiResponse<TopUpResponse> apiResponse = new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Nạp tiền thất bại: " + e.getMessage(), null);
@@ -83,6 +88,38 @@ public class TransactionController {
         Long userId = Long.parseLong(userIdStr);
         Page<Transaction> history = transactionService.getTransactionHistoryByType(userId, Transaction.TransactionType.PURCHASE_SUBSCRIPTION, pageable);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy lịch sử mua gói thành công", history));
+    }
+
+    /**
+     * User mua gói subscription (giảm trừ tiền trong ví)
+     */
+    @PreAuthorize("hasRole('SERVICE')")
+    @PostMapping("/purchase")
+    public ResponseEntity<ApiResponse<PurchaseResponse>> processPurchase(@AuthenticationPrincipal String userIdStr, @RequestBody PurchaseRequest purchaseRequest) {
+        try {
+            Long id;
+            try {
+                id = Long.parseLong(userIdStr);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Invalid user ID", null));
+            }
+            PurchaseResponse transaction = transactionService.processPurchase(id, purchaseRequest);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Xử lý mua gói thành công", transaction));
+        } catch (IllegalArgumentException e) {
+            logger.error("Lỗi khi xử lý mua gói: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Lỗi khi xử lý mua gói: " + e.getMessage(), null));
+        } catch (AppException e) {
+            logger.error("Lỗi khi xử lý mua gói: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(new ApiResponse<>(e.getErrorCode().getCode(), "Lỗi khi xử lý mua gói: " + e.getErrorCode().getMessage(), null));
+        }
+        catch (Exception e) {
+            logger.error("Lỗi khi xử lý mua gói: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống: " + e.getMessage(), null));
+        }
     }
 
     // ======================================================

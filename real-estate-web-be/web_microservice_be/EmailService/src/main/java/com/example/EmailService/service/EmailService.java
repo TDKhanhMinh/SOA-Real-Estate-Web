@@ -111,7 +111,7 @@ public class EmailService {
 
         formatted.put("amount", EmailFormatUtils.vnd(raw_data.get("amount")));
         formatted.put("new_balance", EmailFormatUtils.vnd(raw_data.get("new_balance")));
-        formatted.put("updatedAt", EmailFormatUtils.date((LocalDateTime) raw_data.get("updatedAt")));
+        formatted.put("updatedAt", EmailFormatUtils.date(LocalDateTime.parse((String) raw_data.get("updatedAt"))));
 
         Context context = new Context();
         context.setVariable("data", formatted);

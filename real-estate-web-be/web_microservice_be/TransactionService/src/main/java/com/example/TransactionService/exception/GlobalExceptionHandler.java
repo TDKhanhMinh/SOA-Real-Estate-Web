@@ -1,9 +1,11 @@
 package com.example.TransactionService.exception;
 
 import com.example.TransactionService.response.ApiResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,6 +65,27 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Object>> handleMissingRequestBody(HttpMessageNotReadableException ex) {
+
+        String message = "Missing or malformed request body.";
+
+        ApiResponse<Object> apiResponse = new ApiResponse<>(
+                HttpStatus.BAD_REQUEST.value(), // Mã lỗi 400
+                message,
+                null
+        );
+
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDataIntegrity(DataIntegrityViolationException e) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT) // 409 Conflict
+                .body(new ApiResponse<>(HttpStatus.CONFLICT.value(), "Giao dịch đang được xử lý hoặc đã xử lý.", null));
+    }
+
     private ResponseEntity<ApiResponse<?>> buildErrorResponse(ErrorCode errorCode, HttpStatus status) {
         ApiResponse<?> response = ApiResponse.builder()
                 .statusCode(errorCode.getCode())
@@ -70,6 +93,4 @@ public class GlobalExceptionHandler {
                 .build();
         return ResponseEntity.status(status).body(response);
     }
-
-
 }

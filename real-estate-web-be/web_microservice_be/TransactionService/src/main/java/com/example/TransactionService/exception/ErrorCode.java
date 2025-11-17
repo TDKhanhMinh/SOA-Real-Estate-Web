@@ -21,7 +21,9 @@ public enum ErrorCode {
     INVALID_OTP(1006, "Invalid OTP code"),
     OTP_EXPIRED(1007, "OTP code has expired"),
 
-    WALLET_NOT_FOUND(3001, "Wallet not found");
+    WALLET_NOT_FOUND(3001, "Wallet not found"),
+    TRANSACTION_NOT_FOUND(3002, "Transaction not found"),
+    INSUFFICIENT_FUNDS(3003, "Insufficient funds in wallet");
 
     private final int code;
     private final String message;

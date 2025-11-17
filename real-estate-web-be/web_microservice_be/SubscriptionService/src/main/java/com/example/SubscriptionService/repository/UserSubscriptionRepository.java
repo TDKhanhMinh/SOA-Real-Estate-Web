@@ -1,8 +1,9 @@
 package com.example.SubscriptionService.repository;
 
-import com.example.SubscriptionService.model.Subscription;
 import com.example.SubscriptionService.model.UserSubscription;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.query.Param;
@@ -20,5 +21,6 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
             "WHERE us.userId = :userId AND us.status = :status")
     Optional<UserSubscriptionDetailsDTO> findUserSubscriptionDetails(@Param("userId") Long userId, @Param("status") UserSubscription.Status status);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<UserSubscription> findByUserId(Long userId);
 }

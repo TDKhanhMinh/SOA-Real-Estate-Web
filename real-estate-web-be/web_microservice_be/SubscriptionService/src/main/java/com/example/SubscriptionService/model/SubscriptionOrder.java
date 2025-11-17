@@ -24,6 +24,9 @@ public class SubscriptionOrder {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "email")
+    private String email;
+
     @Column(name = "subscription_id")
     private Long subscriptionId;
 
@@ -42,6 +45,7 @@ public class SubscriptionOrder {
     public enum Status {
         PENDING,
         COMPLETED,
-        FAILED
+        FAILED,
+        REVIEW_NEEDED
     }
 }

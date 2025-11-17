@@ -1,5 +1,6 @@
 package com.example.TransactionService.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,9 +14,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+    @Value("${internal.api.key}")
+    private String internalApiKey;
+
     @Bean
     public HeaderAuthenticationFilter headerAuthenticationFilter() {
-        return new HeaderAuthenticationFilter();
+        return new HeaderAuthenticationFilter(internalApiKey);
     }
 
 

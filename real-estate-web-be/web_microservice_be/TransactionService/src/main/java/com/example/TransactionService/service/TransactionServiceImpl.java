@@ -5,11 +5,15 @@ import com.example.TransactionService.dto.UserCreatedDTO;
 import com.example.TransactionService.exception.AppException;
 import com.example.TransactionService.exception.ErrorCode;
 import com.example.TransactionService.mapper.TransactionMapper;
+import com.example.TransactionService.model.ProcessedTransaction;
 import com.example.TransactionService.model.Transaction;
 import com.example.TransactionService.model.Wallet;
+import com.example.TransactionService.repository.ProcessedTransactionRepository;
 import com.example.TransactionService.repository.TransactionRepository;
 import com.example.TransactionService.repository.WalletRepository;
+import com.example.TransactionService.request.PurchaseRequest;
 import com.example.TransactionService.request.TopUpRequest;
+import com.example.TransactionService.response.PurchaseResponse;
 import com.example.TransactionService.response.TopUpResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +44,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final RabbitTemplate rabbitTemplate;
     private final TransactionMapper transactionMapper;
+    private final ProcessedTransactionRepository processedTransactionRepository;
 
     // RabbitMQ Config
     @Value("${rabbitmq.exchange.name}")
@@ -50,6 +55,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 
     @RabbitListener(queues = "${rabbitmq.queue.user}")
+    @Transactional
     public void handleUserCreated(UserCreatedDTO userCreatedDTO) {
         log.info("Nhận được sự kiện User Created: {}", userCreatedDTO);
 
@@ -116,7 +122,7 @@ public class TransactionServiceImpl implements TransactionService {
                             "transaction_id", savedTransaction.getId(),
                             "amount", savedTransaction.getAmount(),
                             "payment_method", savedTransaction.getPaymentMethod(),
-                            "updatedAt", savedTransaction.getUpdatedAt(),
+                            "updatedAt", savedTransaction.getUpdatedAt().toString(),
                             "new_balance", savedWallet.getBalance()
                             )
             );
@@ -176,6 +182,96 @@ public class TransactionServiceImpl implements TransactionService {
 
         // 5. Thực thi truy vấn
         return transactionRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    @Transactional
+    public PurchaseResponse processPurchase(Long userId, PurchaseRequest purchaseRequest) {
+        log.info("Xử lý yêu cầu mua hàng cho OrderID: {}", purchaseRequest.subscriptionOrderId());
+
+        // 1. KIỂM TRA IDEMPOTENCY (Chống trùng lặp)
+        Optional<ProcessedTransaction> existingTransaction = processedTransactionRepository.findById(purchaseRequest.subscriptionOrderId());
+
+        if (existingTransaction.isPresent()) {
+            log.warn("OrderID: {} đã được xử lý. Trả về giao dịch cũ.", purchaseRequest.subscriptionOrderId());
+            // Nếu đã xử lý, trả về kết quả cũ mà không trừ tiền lại
+            Transaction oldTransaction = transactionRepository.findById(existingTransaction.get().getTransactionId())
+                    .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_NOT_FOUND));
+
+            return PurchaseResponse.builder().
+                    transactionId(oldTransaction.getId()).
+                    userId(oldTransaction.getUserId()).
+                    email(oldTransaction.getEmail()).
+                    userName(oldTransaction.getUserName()).
+                    amount(oldTransaction.getAmount()).
+                    status(oldTransaction.getStatus()).
+                    createdAt(oldTransaction.getCreatedAt()).
+                    subscriptionOrderId(purchaseRequest.subscriptionOrderId()).
+                    build();
+        }
+
+        // 2. TÌM VÍ VÀ KHÓA (Pessimistic Lock)
+        // (Giả sử WalletRepository đã có findByUserId với @Lock)
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.WALLET_NOT_FOUND));
+
+        if(!Objects.equals(wallet.getEmail(), purchaseRequest.email())) {
+            log.warn("Email trong yêu cầu mua hàng không khớp với email ví của user {}.", userId);
+            throw new IllegalArgumentException("Email trong yêu cầu mua hàng không khớp với email ví.");
+        }
+
+        // 3. XỬ LÝ THANH TOÁN
+        if (wallet.getBalance() >= purchaseRequest.amount()) {
+            // 3.1. THÀNH CÔNG: Đủ tiền
+            log.info("Ví đủ tiền. Trừ tiền cho User {}", userId);
+            wallet.setBalance(wallet.getBalance() - purchaseRequest.amount());
+            wallet.setUpdatedAt(LocalDateTime.now());
+            walletRepository.save(wallet);
+
+            Transaction transaction = Transaction.builder()
+                    .userId(userId)
+                    .email(purchaseRequest.email())
+                    .userName(purchaseRequest.userName())
+                    .transactionType(Transaction.TransactionType.PURCHASE_SUBSCRIPTION)
+                    .amount(purchaseRequest.amount() * -1) // Ghi âm
+                    .status(Transaction.Status.COMPLETED)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            Transaction savedTransaction = transactionRepository.save(transaction);
+
+            // Lưu vào bảng đã xử lý để chống trùng lặp
+            ProcessedTransaction processedTransaction = ProcessedTransaction.builder()
+                    .subscriptionOrderId(purchaseRequest.subscriptionOrderId())
+                    .transactionId(savedTransaction.getId())
+                    .subscriptionName(purchaseRequest.subscriptionName())
+                    .subscriptionId(purchaseRequest.subscriptionId())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            ProcessedTransaction savedProcessedTransaction = processedTransactionRepository.save(processedTransaction);
+
+            PurchaseResponse response = PurchaseResponse.builder().
+                    transactionId(savedTransaction.getId()).
+                    userId(savedTransaction.getUserId()).
+                    email(savedTransaction.getEmail()).
+                    userName(savedTransaction.getUserName()).
+                    amount(savedTransaction.getAmount()).
+                    status(savedTransaction.getStatus()).
+                    createdAt(savedTransaction.getCreatedAt()).
+                    subscriptionOrderId(savedProcessedTransaction.getSubscriptionOrderId()).
+                    build();
+            log.info("Mua hàng thành công cho OrderID: {}. Giao dịch ID: {}", purchaseRequest.subscriptionOrderId(), savedTransaction.getId());
+            return response;
+
+        } else {
+            // 3.2. THẤT BẠI: Không đủ tiền
+            log.warn("Ví KHÔNG đủ tiền cho User {}. Số dư: {}", userId, wallet.getBalance());
+
+            // Ném lỗi để Controller trả về 400
+            throw new AppException(ErrorCode.INSUFFICIENT_FUNDS); // (Bạn cần tự định nghĩa ErrorCode này)
+        }
     }
 
     // Luôn lọc giao dịch TOP_UP

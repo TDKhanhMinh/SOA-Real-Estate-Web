@@ -4,6 +4,7 @@ import com.example.SubscriptionService.dto.SubscriptionDTO;
 import com.example.SubscriptionService.dto.UserSubscriptionDetailsDTO;
 import com.example.SubscriptionService.exception.AppException;
 import com.example.SubscriptionService.model.Subscription;
+import com.example.SubscriptionService.model.SubscriptionOrder;
 import com.example.SubscriptionService.request.UpdateSubscriptionRequest;
 import com.example.SubscriptionService.response.ApiResponse;
 import com.example.SubscriptionService.service.SubscriptionService;
@@ -126,6 +127,53 @@ public class SubscriptionController {
             log.error("Unexpected error fetching current user subscription", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    /**
+     * User đăng ký/mua một gói subscription
+     */
+    @PostMapping("/user/purchase/{subscriptionId}")
+    public ResponseEntity<ApiResponse<SubscriptionOrder>> purchaseSubscription(
+            @AuthenticationPrincipal String userIdStr, //
+            @PathVariable Long subscriptionId) {
+
+        log.info("User {} yêu cầu mua gói {}", userIdStr, subscriptionId);
+        Long userId;
+        try {
+            userId = Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid user ID format", null));
+        }
+
+        try {
+            // Service sẽ trả về kết quả cuối cùng (COMPLETED, FAILED, REVIEW_NEEDED)
+            SubscriptionOrder order = subscriptionService.purchaseSubscription(userId, subscriptionId);
+
+            // Xử lý kết quả
+            HttpStatus status = HttpStatus.OK;
+            String message = "Giao dịch thành công.";
+
+            if (order.getStatus() == SubscriptionOrder.Status.FAILED) {
+                status = HttpStatus.BAD_REQUEST; // 400
+                message = "Giao dịch thất bại.";
+            } else if (order.getStatus() == SubscriptionOrder.Status.REVIEW_NEEDED) {
+                status = HttpStatus.ACCEPTED; // 202
+                message = "Không thể xác nhận giao dịch, yêu cầu của bạn đang được xem xét.";
+            }
+
+            return ResponseEntity.status(status)
+                    .body(new ApiResponse<>(status.value(), message, order));
+
+        } catch (AppException e) {
+            log.error("Lỗi khi user {} mua gói {}: {}", userId, subscriptionId, e.getErrorCode().getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Lỗi hệ thống khi user {} mua gói {}: {}", userId, subscriptionId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống, vui lòng thử lại.", null));
         }
     }
 
