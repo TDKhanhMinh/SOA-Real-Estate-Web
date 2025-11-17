@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { BankLogoGrid, MomoIcon, TransferIcon, VnPayIcon } from '../../assets/js/logo';
 import { CountdownTimer } from '../../components/CountdownTimer';
-
+import { useLocation } from 'react-router-dom';
 const mockUser = {
     fullName: 'Nguyễn Trường Nam',
     imageUrl: 'https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg',
@@ -15,12 +15,12 @@ const mockUser = {
     }
 };
 
-const mockAmount = 500000;
 
 
 export default function MomoPayment() {
+    const location = useLocation();
+    const amount = location.state;
     const [user] = useState(mockUser);
-    const [amount] = useState(mockAmount);
 
     return (
         <div className="bg-gray-100 min-h-screen w-full">
@@ -55,7 +55,7 @@ export default function MomoPayment() {
                                     <h5 className="text-white text-lg font-semibold mt-4">Quét mã QR để thanh toán</h5>
                                     <img
                                         className="rounded-lg w-full max-w-[350px] h-auto aspect-square my-4"
-                                        src="https://res.cloudinary.com/dsj6sba9f/image/upload/v1763012458/download_pvak41.jpg" // Cần đảm bảo đường dẫn này đúng trong React (public folder)
+                                        src="https://res.cloudinary.com/dsj6sba9f/image/upload/v1763012458/download_pvak41.jpg"
                                         alt="Momo QR Code"
                                     />
                                     <h6 className="text-white text-center text-sm max-w-xs">

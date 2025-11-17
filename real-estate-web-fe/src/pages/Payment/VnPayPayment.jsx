@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
-import {
-    HiOutlineClipboardCopy, HiOutlinePlusCircle, HiOutlineClipboardList,
-    HiOutlineClipboardCheck, HiOutlineUserCircle, HiOutlineCog,
-    HiOutlineCash, HiOutlineLockClosed, HiOutlineShoppingBag,
-    HiOutlineBookOpen, HiOutlineTicket, HiOutlineQrcode
-} from 'react-icons/hi';
+import { HiOutlineQrcode } from 'react-icons/hi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { BankLogoGrid, MomoIcon, TransferIcon, VnPayIcon } from '../../assets/js/logo';
 import { CountdownTimer } from '../../components/CountdownTimer';
+import { useLocation } from 'react-router-dom';
 
 
 
-const mockAmount = 500000;
+
 
 
 export default function VnPayPayment() {
-    const [amount] = useState(mockAmount);
+    const location = useLocation();
+
+    const amount = location.state;
+
 
     return (
         <div className="bg-gray-100 min-h-screen w-full">

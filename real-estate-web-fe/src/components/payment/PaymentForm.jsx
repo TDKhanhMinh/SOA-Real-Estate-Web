@@ -1,37 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { transactionService } from './../../services/transactionService';
+import { userService } from './../../services/userService';
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 export const PaymentForm = ({ paymentMethod }) => {
     const [money, setMoney] = useState('');
     const [selectedAmount, setSelectedAmount] = useState(null);
     const [error, setError] = useState('');
-    const navigate= useNavigate()
     const quickAmounts = [500000, 1000000, 2000000, 5000000, 7000000, 10000000];
-
     const amount = parseFloat(money || selectedAmount) || 0;
     const vat = amount * 0.1;
     const total = amount - vat;
+    const [user, setUser] = useState(null)
+    const navigate = useNavigate();
+
 
     const handleMoneyChange = (e) => {
         setMoney(e.target.value);
         setSelectedAmount(null);
         if (error) setError('');
     };
+    useEffect(() => {
+        const fetchUser = async () => {
+            setUser(await userService.getProfile());
+        };
+        fetchUser();
+    }, [])
 
     const handleQuickSelect = (value) => {
         setSelectedAmount(value);
-        setMoney(''); 
+        setMoney('');
         if (error) setError('');
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!user) {
+            setError('Thông tin người dùng chưa tải xong, vui lòng đợi.');
+            return;
+        }
         if (!amount || amount <= 0) {
             setError('Vui lòng chọn số tiền cần nạp');
         } else {
             setError('');
-            console.log('Submitting form:', { paymentMethod, amount });
-            // Gửi form...
+            console.log('Submitting form:', { paymentMethod, amount: total, email: user.email, userName: user.name, });
+            try {
+                await transactionService.createTransaction({ amount: total, email: user.email, userName: user.name, paymentMethod });
+                if (paymentMethod === 'vnpay') {
+                    navigate("/account/vnpay", { state: total })
+                } else {
+                    navigate("/account/momo", { state: total })
+                }
+            } catch (error) {
+                if (error.response && error.response.data && error.response.data.message) {
+                    toast.error(error.response.data.message);
+                } else {
+                    toast.error(error.message);
+                }
+            }
         }
     };
 
@@ -88,7 +115,7 @@ export const PaymentForm = ({ paymentMethod }) => {
             </div>
             <hr className="my-3" />
             <div className="text-right mt-3">
-                <button onClick={()=>navigate("/account/vnpay")} className="bg-blue-600 text-white font-semibold py-2 px-8 rounded-lg hover:bg-blue-700" type="submit">
+                <button onClick={handleSubmit} className="bg-blue-600 text-white font-semibold py-2 px-8 rounded-lg hover:bg-blue-700" type="submit">
                     Tiếp tục
                 </button>
             </div>

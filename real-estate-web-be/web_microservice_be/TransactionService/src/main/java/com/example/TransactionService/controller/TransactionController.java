@@ -39,8 +39,14 @@ public class TransactionController {
      */
 
     @PostMapping("/top-up")
-    public ResponseEntity<ApiResponse<TopUpResponse>> topUpAccount(@AuthenticationPrincipal Long userId, @Validated @RequestBody TopUpRequest topUpRequest) {
-        logger.info("Nhận yêu cầu nạp tiền vào tài khoản");
+    public ResponseEntity<ApiResponse<TopUpResponse>> topUpAccount(@AuthenticationPrincipal String userIdStr, @Validated @RequestBody TopUpRequest topUpRequest) {
+        logger.info("Nhận yêu cầu nạp tiền vào tài khoản"+userIdStr);
+        if (userIdStr == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), "Không tìm thấy thông tin người dùng", null));
+        }
+        Long userId = Long.parseLong(userIdStr);
+
         try {
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Nạp tiền thành công", transactionService.topUpWallet(userId, topUpRequest)));
         } catch (IllegalArgumentException e) {
@@ -60,9 +66,9 @@ public class TransactionController {
      */
     @GetMapping("/history/top-up")
     public ResponseEntity<ApiResponse<Page<Transaction>>> getMyTopUpHistory(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userIdStr,
             @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-
+        Long userId = Long.parseLong(userIdStr);
         Page<Transaction> history = transactionService.getTransactionHistoryByType(userId, Transaction.TransactionType.TOP_UP, pageable);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy lịch sử nạp tiền thành công", history));
     }
@@ -72,9 +78,9 @@ public class TransactionController {
      */
     @GetMapping("/history/purchase")
     public ResponseEntity<ApiResponse<Page<Transaction>>> getMyPurchaseHistory(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userIdStr,
             @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-
+        Long userId = Long.parseLong(userIdStr);
         Page<Transaction> history = transactionService.getTransactionHistoryByType(userId, Transaction.TransactionType.PURCHASE_SUBSCRIPTION, pageable);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy lịch sử mua gói thành công", history));
     }

@@ -10,6 +10,7 @@ const mockUser = {
     phone: '090xxxxxxx',
 };
 
+
 export default function Payment() {
     const [user] = useState(mockUser);
     const [paymentOption, setPaymentOption] = useState('vnpay');
