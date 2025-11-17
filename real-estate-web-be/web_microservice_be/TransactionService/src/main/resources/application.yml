@@ -25,4 +25,3 @@ rabbitmq:
   routing-key:
     user-created: "user.created"
     user-top-up: "transaction.top_up"
-    user-purchase-subscription: "transaction.purchase_subscription"

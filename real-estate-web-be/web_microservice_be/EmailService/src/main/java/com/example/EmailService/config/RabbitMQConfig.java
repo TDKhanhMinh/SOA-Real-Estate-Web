@@ -24,6 +24,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.property}")
     private String propertyQueueName;
 
+    @Value("${rabbitmq.queue.subscription}")
+    private String subscriptionQueueName;
+
     @Value("${rabbitmq.routing-key.user}")
     private String userRoutingKey;
 
@@ -32,6 +35,9 @@ public class RabbitMQConfig {
 
     @Value("${rabbitmq.routing-key.property}")
     private String propertyRoutingKey;
+
+    @Value("${rabbitmq.routing-key.subscription}")
+    private String subscriptionRoutingKey;
 
     @Bean
     public TopicExchange emailExchange(){
@@ -52,6 +58,9 @@ public class RabbitMQConfig {
     public Queue propertyQueue() {
         return new Queue(propertyQueueName);
     }
+
+    @Bean
+    public Queue subscriptionQueue() { return new Queue(subscriptionQueueName); }
 
     @Bean
     public Binding userBinding(Queue userQueue, TopicExchange emailExchange) {
@@ -75,6 +84,13 @@ public class RabbitMQConfig {
                 .bind(propertyQueue)
                 .to(emailExchange)
                 .with(propertyRoutingKey);
+    }
+
+    @Bean Binding subscriptionBinding(Queue subscriptionQueue, TopicExchange emailExchange) {
+        return BindingBuilder
+                .bind(subscriptionQueue)
+                .to(emailExchange)
+                .with(subscriptionRoutingKey);
     }
 
     @Bean

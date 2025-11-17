@@ -15,7 +15,4 @@ public class UpdateProfileRequest {
     @Size(min = 10, max = 10, message = "PHONE_INVALID")
     private String phone;
     private String avatarUrl;
-    @Email(message = "EMAIL_INVALID")
-    @Size(max = 100, message = "EMAIL_TOO_LONG")
-    private String email;
 }

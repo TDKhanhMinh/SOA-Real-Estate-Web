@@ -92,7 +92,8 @@ public class UserServiceImpl implements UserService {
             );
 
             UserCreatedDTO userCreatedDTO = new UserCreatedDTO(
-                    savedUser.getId()
+                    savedUser.getId(),
+                    savedUser.getEmail()
             );
             rabbitTemplate.convertAndSend(
                     exchangeName,
@@ -271,7 +272,6 @@ public class UserServiceImpl implements UserService {
         existingUser.setName(updateRequest.getName());
         existingUser.setPhone(updateRequest.getPhone());
         existingUser.setIsActive(updateRequest.getIsActive());
-        existingUser.setEmail(updateRequest.getEmail());
 
         return userMapper.toUserResponse(userRepo.save(existingUser));
     }
@@ -285,7 +285,6 @@ public class UserServiceImpl implements UserService {
         existingUser.setName(updateProfileRequest.getName());
         existingUser.setPhone(updateProfileRequest.getPhone());
         existingUser.setAvatarUrl(updateProfileRequest.getAvatarUrl());
-        existingUser.setEmail(updateProfileRequest.getEmail());
 
         return userMapper.toUserDTO(userRepo.save(existingUser));
     }

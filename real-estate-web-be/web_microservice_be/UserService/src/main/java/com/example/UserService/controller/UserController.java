@@ -7,7 +7,7 @@ import com.example.UserService.response.PageResponse;
 import com.example.UserService.response.UserResponse;
 import com.example.UserService.model.User;
 import com.example.UserService.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.web.PageableDefault;
@@ -24,7 +24,7 @@ import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/user")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
@@ -34,6 +34,9 @@ public class UserController {
         return "Hello, secured world!";
     }
 
+    // ======================================================
+    // ENDPOINTS CHO USER (NGƯỜI DÙNG)
+    // ======================================================
     /**
      *  Đăng ký người dùng mới
      */
@@ -83,71 +86,6 @@ public class UserController {
     }
 
     /**
-     * [Admin] Lấy danh sách tất cả người dùng
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/")
-    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
-            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
-            Pageable pageable
-    ) {
-        try{
-            PageResponse<UserResponse> users = userService.getAllUsers(pageable);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get list users success", users));
-        } catch (AppException e){
-            log.error("Error fetching users", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
-        } catch (Exception e) {
-            log.error("Unexpected error fetching users", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
-        }
-    }
-
-    /**
-     * [Admin] Tìm kiếm người dùng theo tên hoặc email
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/search")
-    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(@RequestParam(required = false) String keyword,
-                                                                       @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
-                                                                       Pageable pageable) {
-        try{
-            PageResponse<UserResponse> users = userService.searchUsers(keyword, pageable);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Search users success", users));
-        } catch (AppException e){
-            log.error("Error searching users", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
-        } catch (Exception e) {
-            log.error("Unexpected error searching users", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
-        }
-    }
-
-        /**
-        * [Admin] Lấy thông tin người dùng theo ID
-        */
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
-        try{
-            UserResponse user = userService.getUserById(id);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get user success", user));
-        } catch (AppException e){
-            log.error("Error fetching user by ID", e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getErrorCode().getMessage(), null));
-        } catch (Exception e) {
-            log.error("Unexpected error fetching user by ID", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
-        }
-    }
-
-    /**
      * Lấy thông tin profile của người dùng hiện tại
      */
     @GetMapping("/profile")
@@ -176,32 +114,11 @@ public class UserController {
     }
 
     /**
-     * [Admin] Cập nhật thông tin người dùng theo ID
-     */
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@Validated @RequestBody UpdateRequest updateRequest,
-                                                                @PathVariable Long id) {
-        try{
-            UserResponse updatedUser = userService.updateUser(updateRequest, id);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Update user success", updatedUser));
-        } catch (AppException e){
-            log.error("Error updating user", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
-        } catch (Exception e) {
-            log.error("Unexpected error updating user", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
-        }
-    }
-
-    /**
      * Cập nhật thông tin profile của người dùng hiện tại
      */
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<UserDTO>> updateProfile(@Validated @RequestBody UpdateProfileRequest updateProfileRequest,
-                                                                @AuthenticationPrincipal String userIdStr) {
+                                                              @AuthenticationPrincipal String userIdStr) {
         try{
             Long id;
             try {
@@ -305,6 +222,95 @@ public class UserController {
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
         } catch (Exception e) {
             log.error("Unexpected error in reset password", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    // ======================================================
+    // ENDPOINTS CHO ADMIN (QUẢN TRỊ VIÊN)
+    // ======================================================
+    /**
+     * [Admin] Lấy danh sách tất cả người dùng
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/")
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
+            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
+            Pageable pageable
+    ) {
+        try{
+            PageResponse<UserResponse> users = userService.getAllUsers(pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get list users success", users));
+        } catch (AppException e){
+            log.error("Error fetching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        } catch (Exception e) {
+            log.error("Unexpected error fetching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    /**
+     * [Admin] Tìm kiếm người dùng theo tên hoặc email
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(@RequestParam(required = false) String keyword,
+                                                                       @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.ASC)
+                                                                       Pageable pageable) {
+        try{
+            PageResponse<UserResponse> users = userService.searchUsers(keyword, pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Search users success", users));
+        } catch (AppException e){
+            log.error("Error searching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        } catch (Exception e) {
+            log.error("Unexpected error searching users", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    /**
+    * [Admin] Lấy thông tin người dùng theo ID
+    */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
+        try{
+            UserResponse user = userService.getUserById(id);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get user success", user));
+        } catch (AppException e){
+            log.error("Error fetching user by ID", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error fetching user by ID", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    /**
+     * [Admin] Cập nhật thông tin người dùng theo ID
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@Validated @RequestBody UpdateRequest updateRequest,
+                                                                @PathVariable Long id) {
+        try{
+            UserResponse updatedUser = userService.updateUser(updateRequest, id);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Update user success", updatedUser));
+        } catch (AppException e){
+            log.error("Error updating user", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Unexpected error updating user", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
