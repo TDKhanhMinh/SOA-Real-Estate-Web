@@ -279,8 +279,9 @@ public class UserController {
     * [Admin] Lấy thông tin người dùng theo ID
     */
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long id) {
+    @GetMapping("/{userIdStr}")
+    public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable String userIdStr) {
+        Long id = Long.parseLong(userIdStr);
         try{
             UserResponse user = userService.getUserById(id);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Get user success", user));

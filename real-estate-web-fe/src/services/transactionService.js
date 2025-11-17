@@ -5,16 +5,20 @@ export const transactionService = {
         const res = await http.get(`transaction/admin/top-up/all`, data);
         return res.data.data;
     },
-    getUserTransactionByAdmin: async (userId) => {
+    getUserWalletByAdmin: async (userId) => {
         const res = await http.get(`transaction/admin/user/${userId}/wallet`);
+        return res.data.data;
+    },
+    getUserWalletByUser: async (userId) => {
+        const res = await http.get(`transaction/user/${userId}/wallet`);
         return res.data.data;
     },
     getUserTransactionHistoryByAdmin: async (userId) => {
         const res = await http.get(`transaction/admin/user/${userId}/history`);
         return res.data.data;
     },
-    getTransactionSubscription: async () => {
-        const res = await http.get("transaction//history/purchase");
+    getTransactionSubscription: async (data) => {
+        const res = await http.get("transaction//history/purchase", data);
         return res.data.data;
     },
     getUserTransaction: async () => {

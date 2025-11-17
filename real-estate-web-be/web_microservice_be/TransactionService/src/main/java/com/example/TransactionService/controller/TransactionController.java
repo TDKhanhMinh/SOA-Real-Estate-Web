@@ -89,6 +89,18 @@ public class TransactionController {
         Page<Transaction> history = transactionService.getTransactionHistoryByType(userId, Transaction.TransactionType.PURCHASE_SUBSCRIPTION, pageable);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy lịch sử mua gói thành công", history));
     }
+    @GetMapping("/user/{userIdStr}/wallet")
+    public ResponseEntity<ApiResponse<Wallet>> getWalletUserById(@PathVariable String userIdStr) {
+        Long userId = Long.parseLong(userIdStr);
+        try {
+            Wallet wallet = transactionService.getWalletByUserId(userId);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thông tin ví thành công", wallet));
+        } catch (Exception e) {
+            logger.error("Admin lỗi khi lấy ví cho user {}: {}", userId, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        }
+    }
 
     /**
      * User mua gói subscription (giảm trừ tiền trong ví)
@@ -130,8 +142,9 @@ public class TransactionController {
      * Admin xem ví của 1 user cụ thể
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/user/{userId}/wallet")
-    public ResponseEntity<ApiResponse<Wallet>> getWalletByUserId(@PathVariable Long userId) {
+    @GetMapping("/admin/user/{userIdStr}/wallet")
+    public ResponseEntity<ApiResponse<Wallet>> getWalletByUserId(@PathVariable String userIdStr) {
+        Long userId = Long.parseLong(userIdStr);
         try {
             Wallet wallet = transactionService.getWalletByUserId(userId);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thông tin ví thành công", wallet));
@@ -146,11 +159,11 @@ public class TransactionController {
      * Admin xem TẤT CẢ lịch sử (top-up và purchase) của 1 user
      */
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/user/{userId}/history")
+    @GetMapping("/admin/user/{userIdStr}/history")
     public ResponseEntity<ApiResponse<Page<Transaction>>> getAllHistoryByUserId(
-            @PathVariable Long userId,
+            @PathVariable String userIdStr,
             @PageableDefault(page = 0, size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-
+        Long userId = Long.parseLong(userIdStr);
         Page<Transaction> history = transactionService.getAllTransactionHistoryByUserId(userId, pageable);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy tất cả lịch sử cho user " + userId + " thành công", history));
     }

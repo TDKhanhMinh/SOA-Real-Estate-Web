@@ -6,6 +6,7 @@ import {
     HiOutlineUserCircle, HiOutlineCog, HiOutlineCash, HiOutlineLockClosed,
     HiOutlineShoppingBag, HiOutlineBookOpen, HiOutlineTicket, HiOutlineCollection
 } from "react-icons/hi";
+import { transactionService } from "../services/transactionService";
 
 
 const formatCurrency = (balance) => {
@@ -54,6 +55,7 @@ const menuSections = [
 
 export default function Sidebar() {
     const navigate = useNavigate();
+    const [wallet, setWallet] = useState(null);
     const [user, setUser] = useState({
         name: "Tên người dùng",
         avatarUrl: "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg",
@@ -63,13 +65,23 @@ export default function Sidebar() {
     const [isCopied, setIsCopied] = useState(false);
 
     useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
         const loadUserFromStorage = () => {
-            const storedUser = localStorage.getItem("user");
             if (storedUser) {
-                setUser(JSON.parse(storedUser));
+                setUser(storedUser);
+            }
+        };
+        const fetchUserWallet = async () => {
+            try {
+                const response = await transactionService.getUserWalletByUser(storedUser.id);
+                console.log("user wallet ", response);
+                setWallet(response);
+            } catch (err) {
+                console.error("Failed to fetch wallet:", err);
             }
         };
         loadUserFromStorage();
+        fetchUserWallet()
     }, []);
 
     const copyToClipboard = () => {
@@ -77,19 +89,19 @@ export default function Sidebar() {
         setIsCopied(true);
         setTimeout(() => {
             setIsCopied(false);
-        }, 2000); 
+        }, 2000);
     };
 
     const navLinkClass = ({ isActive }) =>
         `flex items-center gap-3 w-full text-left p-3 rounded-md transition-colors text-sm font-medium ${isActive
-            ? 'bg-blue-100 text-blue-700' 
+            ? 'bg-blue-100 text-blue-700'
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
         }`;
 
     return (
         <aside className="w-72 flex-shrink-0 bg-white border-r h-screen overflow-y-auto sticky top-0">
             <div className="p-4 flex flex-col gap-4">
-                
+
                 <div className="flex flex-col items-center bg-gray-100 rounded-lg p-4">
                     <img
                         className="rounded-full w-12 h-12 object-cover mb-2"
@@ -99,19 +111,16 @@ export default function Sidebar() {
                     <span className="font-bold text-gray-800">{user.name}</span>
                 </div>
 
-                
+
                 <div className="bg-gray-100 rounded-lg p-4">
                     <h6 className="font-semibold mb-2">Số dư tài khoản</h6>
                     <div className="flex justify-between my-2 text-sm">
                         <span>TK Chính</span>
                         <span className="text-green-600 font-medium">
-                            {formatCurrency(user.accountBalance)}
+                            {formatCurrency(wallet?.balance)}
                         </span>
                     </div>
-                    <div className="flex justify-between my-2 text-sm">
-                        <span>TK Khuyến mãi</span>
-                        <span className="text-gray-600 font-medium">0 VNĐ</span>
-                    </div>
+
                     <div
                         className="cursor-pointer bg-white shadow rounded-lg text-center py-2 px-3 mt-4"
                         onClick={copyToClipboard}
@@ -139,7 +148,7 @@ export default function Sidebar() {
 
                 <hr className="my-2 border-gray-200" />
 
-                
+
                 <nav className="flex flex-col gap-4">
                     {menuSections.map((section) => (
                         <div key={section.title}>
