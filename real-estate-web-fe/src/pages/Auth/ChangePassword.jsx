@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Button from "../components/Button";
-import { userService } from "../services/userService";
+import { userService } from "../../services/userService";
+import Button from "../../components/Button";
 
 export default function ChangePassword() {
     const [form, setForm] = useState({

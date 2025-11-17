@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import TextInput from "../components/TextInput";
-import Button from "../components/Button";
-import { authService } from "../services/authService";
 import { toast } from "react-toastify";
+import TextInput from "../../components/TextInput";
+import { authService } from "../../services/authService";
+import Button from "../../components/Button";
 
 export default function Register() {
   const navigate = useNavigate();

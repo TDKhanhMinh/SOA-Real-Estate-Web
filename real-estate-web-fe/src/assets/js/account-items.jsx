@@ -13,7 +13,7 @@ export const ACCOUNT_ITEMS = [
   {
     title: "Tổng quan",
     icon: <FontAwesomeIcon icon={faBars} style={{ color: "#2563eb" }} />,
-    to: "/user/account",
+    to: "/account",
   },
   {
     title: "Gói hội viên",
@@ -35,7 +35,7 @@ export const ACCOUNT_ITEMS = [
   {
     title: "Nạp tiền",
     icon: <FontAwesomeIcon icon={faWallet} style={{ color: "#3b82f6" }} />,
-    to: "/user/deposit",
+    to: "/account/payment",
   },
   {
     title: "Trung tâm trợ giúp",

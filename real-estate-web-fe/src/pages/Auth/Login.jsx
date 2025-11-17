@@ -1,9 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
-import TextInput from "./../components/TextInput";
-import Button from "../components/Button";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth";
+import TextInput from "../../components/TextInput";
+import Button from "../../components/Button";
 
 
 export default function Login() {

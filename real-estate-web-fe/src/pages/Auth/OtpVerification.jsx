@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
-import { userService } from "../services/userService";
 import { ShieldCheck } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { userService } from "../../services/userService";
 
 export default function OtpVerification() {
     const [otp, setOtp] = useState(Array(6).fill(""));

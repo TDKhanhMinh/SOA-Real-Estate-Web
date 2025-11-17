@@ -2,16 +2,16 @@
 import { createBrowserRouter } from "react-router-dom";
 import Home from "../pages/Home";
 import MainLayout from "../layout/MainLayout";
-import Login from './../pages/Login';
-import Register from './../pages/Register';
+import Login from './../pages/Auth/Login';
+import Register from './../pages/Auth/Register';
 import Post from "../pages/Post";
 import ListingInfo from "../pages/ListingInfo";
 import AccountLayout from "../layout/AccountLayout";
 import UserListing from "../pages/UserListing";
 import Membership from "../pages/MemberShip";
 import Profile from "../pages/Profile";
-import ForgotPassword from "../pages/ForgotPassword";
-import ChangePassword from "../pages/ChangePassword";
+import ForgotPassword from "../pages/Auth/ForgotPassword";
+import ChangePassword from "../pages/Auth/ChangePassword";
 import SupportCenter from "../pages/SupportCenter";
 import SearchResult from "../pages/SearchResult";
 import AdminLayout from "../layout/AdminLayout";
@@ -21,9 +21,12 @@ import Listings from "../pages/Admin/Listings";
 import Payments from "../pages/Admin/Payments";
 import MembershipManagement from "../pages/Admin/Membership";
 import AuthLayout from "../layout/AuthLayout";
-import OtpVerification from "../pages/OtpVerification";
-import ResetPassword from "../pages/ResetPassword";
+import OtpVerification from "../pages/Auth/OtpVerification";
+import ResetPassword from "../pages/Auth/ResetPassword";
 import MySubscription from "../pages/MySubscription";
+import Payment from "../pages/Payment/Payment";
+import MomoPayment from "../pages/Payment/MomoPayment";
+import VnPayPayment from "../pages/Payment/VnPayPayment";
 
 
 const publicRoutes = createBrowserRouter([
@@ -68,6 +71,15 @@ const publicRoutes = createBrowserRouter([
             {
                 path: 'my-subscription', element: <MySubscription />
             },
+            {
+                path: 'payment', element: <Payment />
+            },
+            {
+                path: 'momo', element: <MomoPayment />
+            },
+            {
+                path: 'vnpay', element: <VnPayPayment />
+            },
 
         ],
     }
@@ -92,6 +104,7 @@ const publicRoutes = createBrowserRouter([
             },
 
 
+
         ],
     }, {
         element: <AuthLayout />,
@@ -111,6 +124,7 @@ const publicRoutes = createBrowserRouter([
             {
                 path: '/reset-password', element: <ResetPassword />
             },
+
 
 
 

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { userService } from "../services/userService";
 import { Lock, CheckCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { userService } from "../../services/userService";
 
 export default function ResetPassword() {
     const [form, setForm] = useState({
