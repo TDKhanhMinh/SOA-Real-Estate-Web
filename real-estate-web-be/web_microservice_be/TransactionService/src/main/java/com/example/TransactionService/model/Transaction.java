@@ -34,6 +34,7 @@ public class Transaction {
     private String userName;
 
     @Column(name = "transaction_type", nullable = false)
+    @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
     @Column(name = "amount", nullable = false)
@@ -43,6 +44,7 @@ public class Transaction {
     private String paymentMethod;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @Column(name = "createdAt", nullable = false)

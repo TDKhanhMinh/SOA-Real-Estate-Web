@@ -37,6 +37,7 @@ public class SubscriptionOrder {
     private Double amount;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @Column(name = "updatedAt")

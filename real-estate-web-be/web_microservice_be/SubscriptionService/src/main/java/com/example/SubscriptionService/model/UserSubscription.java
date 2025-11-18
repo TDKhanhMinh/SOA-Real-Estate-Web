@@ -36,6 +36,7 @@ public class UserSubscription {
     private LocalDateTime endDate;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     public enum Status {

@@ -41,7 +41,6 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                 .collect(Collectors.toList());
 
         // 4. Tạo đối tượng Authentication
-        //    Chúng ta dùng UsernamePasswordAuthenticationToken vì nó tiện lợi
         //    Principal: là userId
         //    Credentials: null (vì đã xác thực ở Gateway)
         //    Authorities: danh sách quyền
@@ -53,7 +52,6 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
 
         // 5. ĐẶT đối tượng Authentication vào SecurityContext
-        //    Đây là bước then chốt!
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // 6. Cho phép request đi tiếp
