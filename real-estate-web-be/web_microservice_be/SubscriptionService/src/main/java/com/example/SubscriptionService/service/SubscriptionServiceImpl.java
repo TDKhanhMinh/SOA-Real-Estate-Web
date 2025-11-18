@@ -1,8 +1,6 @@
 package com.example.SubscriptionService.service;
 
-import com.example.SubscriptionService.dto.SubscriptionDTO;
-import com.example.SubscriptionService.dto.UserCreatedDTO;
-import com.example.SubscriptionService.dto.UserSubscriptionDetailsDTO;
+import com.example.SubscriptionService.dto.*;
 import com.example.SubscriptionService.exception.AppException;
 import com.example.SubscriptionService.exception.ErrorCode;
 import com.example.SubscriptionService.mapper.SubscriptionMapper;
@@ -17,24 +15,30 @@ import com.example.SubscriptionService.response.ApiResponse;
 import com.example.SubscriptionService.request.UpdateSubscriptionRequest;
 import com.example.SubscriptionService.response.PurchaseResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -46,9 +50,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionMapper subscriptionMapper;
     private final WebClient transactionWebClient;
     private final ObjectMapper jacksonObjectMapper;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${internal.api.key}")
     private String internalApiKey;
+
+    @Value("${rabbitmq.exchange.name}")
+    private String exchangeName;
+
+    @Value("${rabbitmq.routing-key.user-purchased}")
+    private String userPurchasedRoutingKey;
 
     // Xử lý sự kiện tạo subscription basic cho user khi nhận được thông tin user mới tạo từ User Service
     @RabbitListener(queues = "${rabbitmq.queue.user}")
@@ -324,6 +335,173 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
     }
 
+    @Override
+    public Page<SubscriptionOrder> getUserSubscriptionHistory(Long userId, Pageable pageable) {
+        return subscriptionOrderRepository.findByUserId(userId, pageable);
+    }
+
+    @Override
+    public Page<SubscriptionOrder> getAllSubscriptionHistory(String search,
+                                                             SubscriptionOrder.Status status,
+                                                             Long subscriptionId,
+                                                             LocalDate startDate,
+                                                             LocalDate endDate,
+                                                             Pageable pageable) {
+        // Xây dựng Specification
+        Specification<SubscriptionOrder> spec = Specification.where(null);
+
+        if (status != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+        }
+
+        if (subscriptionId != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("subscriptionId"), subscriptionId));
+        }
+
+        if (startDate != null) {
+            spec = spec.and((root, query, cb) -> {
+                LocalDateTime start = startDate.atStartOfDay();
+                LocalDateTime end = (endDate != null) ? endDate.plusDays(1).atStartOfDay() : startDate.plusDays(1).atStartOfDay();
+                return cb.between(root.get("updatedAt"), start, end); // Dùng updatedAt làm mốc
+            });
+        }
+
+        if (StringUtils.hasText(search)) {
+            spec = spec.and((root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                String likePattern = "%" + search.toLowerCase() + "%";
+
+                // Search theo email
+                predicates.add(cb.like(cb.lower(root.get("email")), likePattern));
+
+                // Thử search theo User ID (nếu là số)
+                try {
+                    Long idVal = Long.parseLong(search);
+                    predicates.add(cb.equal(root.get("userId"), idVal));
+                } catch (NumberFormatException ignored) {}
+
+                return cb.or(predicates.toArray(new Predicate[0]));
+            });
+        }
+
+        return subscriptionOrderRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public List<RevenueStatDTO> getRevenueStatistics(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null) startDate = LocalDate.now().minusDays(30); // Mặc định 30 ngày
+        if (endDate == null) endDate = LocalDate.now();
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.plusDays(1).atStartOfDay(); // Hết ngày cuối cùng
+
+        return subscriptionOrderRepository.getRevenueStats(startDateTime, endDateTime);
+    }
+
+    @Override
+    public List<SubscriptionStatDTO> getUserSubscriptionStats() {
+        return userSubscriptionRepository.getUserStatsBySubscription();
+    }
+
+    @Override
+    public Page<UserSubscriptionDetailsDTO> getUsersBySubscriptionPackage(Long subscriptionId, Pageable pageable) {
+        // Lấy thông tin gói để hiển thị
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND, ErrorCode.SUBSCRIPTION_NOT_FOUND.getMessage() + ": " + subscriptionId));
+
+        // Tìm user
+        Page<UserSubscription> users = userSubscriptionRepository.findBySubscriptionIdAndStatus(
+                subscriptionId, UserSubscription.Status.ACTIVE, pageable);
+
+        // Convert sang DTO
+        return users.map(userSub -> UserSubscriptionDetailsDTO.builder()
+                .userId(userSub.getUserId())
+                .email(userSub.getEmail())
+                .startDate(userSub.getStartDate())
+                .endDate(userSub.getEndDate())
+                .status(UserSubscription.Status.valueOf(userSub.getStatus().name()))
+                .subscriptionId(subscription.getId())
+                .subscriptionName(subscription.getName())
+                .price(subscription.getPrice())
+                .build());
+    }
+
+    @Override
+    @Transactional
+    public void assignSubscriptionToUser(Long userId, Long subscriptionId) {
+        log.info("Admin đang gán gói {} cho user {}", subscriptionId, userId);
+
+        // Tìm user subscription hiện tại
+        UserSubscription userSub = userSubscriptionRepository.findByUserId(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        // Tìm gói subscription mục tiêu
+        Subscription targetSubscription = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+
+        // Case stacking (gia hạn)
+        if (userSub.getSubscriptionId().equals(subscriptionId)) {
+            log.info("User {} đang ở gói {}, thực hiện stacking (gia hạn).", userId, subscriptionId);
+            LocalDateTime currentEndDate = userSub.getEndDate();
+            LocalDateTime baseDate = (currentEndDate != null && currentEndDate.isAfter(LocalDateTime.now()))
+                    ? currentEndDate
+                    : LocalDateTime.now();
+            userSub.setEndDate(baseDate.plusDays(targetSubscription.getDuration()));
+            userSub.setStatus(UserSubscription.Status.ACTIVE);
+            userSubscriptionRepository.save(userSub);
+            log.info("Đã gia hạn gói {} cho user {}.", targetSubscription.getName(), userId);
+            return;
+        }
+
+        // Case nâng cấp từ Basic hoặc chuyển đổi gói khác
+        log.info("Gán gói {} cho user {}.", subscriptionId, userId);
+
+        // Cập nhật thông tin gói cho user
+        userSub.setSubscriptionId(targetSubscription.getId());
+        userSub.setStatus(UserSubscription.Status.ACTIVE);
+
+        LocalDateTime now = LocalDateTime.now();
+        userSub.setStartDate(now);
+        userSub.setEndDate(now.plusDays(targetSubscription.getDuration()));
+
+        userSubscriptionRepository.save(userSub);
+        log.info("Đã gán thành công gói {} cho user {}. Hết hạn vào: {}",
+                targetSubscription.getName(), userId, userSub.getEndDate());
+    }
+
+    @Override
+    @Transactional
+    public SubscriptionOrder reviewSubscriptionOrder(Long orderId, boolean isApproved) {
+        SubscriptionOrder order = subscriptionOrderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_ORDER_NOT_FOUND));
+
+        // 2. Chỉ xử lý đơn đang cần Review
+        if (order.getStatus() != SubscriptionOrder.Status.REVIEW_NEEDED) {
+            throw new AppException(ErrorCode.ORDER_STATUS_INVALID);
+        }
+
+        log.info("Admin đang xử lý đơn hàng {}. Duyệt: {}", orderId, isApproved);
+
+        if (isApproved) {
+            // --- APPROVE: DÙNG LẠI HÀM ASSIGN ---
+            // Gọi hàm assign để kích hoạt gói cho user
+            assignSubscriptionToUser(order.getUserId(), order.getSubscriptionId());
+
+            // Cập nhật trạng thái đơn hàng
+            order.setStatus(SubscriptionOrder.Status.COMPLETED);
+            log.info("Đơn hàng {} đã được duyệt và hoàn tất.", orderId);
+        } else {
+            // --- REJECT: TỪ CHỐI ---
+            order.setStatus(SubscriptionOrder.Status.FAILED);
+            log.info("Đơn hàng {} đã bị từ chối.", orderId);
+        }
+
+        // Cập nhật thời gian sửa đổi
+        order.setUpdatedAt(LocalDateTime.now());
+
+        return subscriptionOrderRepository.save(order);
+    }
+
     // Helper: Cập nhật order và user subscription khi thành công
     @Transactional
     protected SubscriptionOrder updateOrderOnSuccess(SubscriptionOrder order, Subscription purchasedSub, UserSubscription userSub) {
@@ -365,15 +543,108 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
 
         // 3. Lưu thay đổi
-        userSubscriptionRepository.save(userSub);
+        UserSubscription savedUserSubscription = userSubscriptionRepository.save(userSub);
         log.info("Đã kích hoạt gói {} cho User {}", purchasedSub.getName(), userSub.getUserId());
 
-        return subscriptionOrderRepository.save(order);
+        SubscriptionOrder savedTransaction = subscriptionOrderRepository.save(order);
+        log.info("Cập nhật trạng thái đơn hàng {} thành COMPLETED.", savedTransaction.getId());
+
+        try{
+            Map<String, Object> emailProps = new HashMap<>();
+            emailProps.put("subscriptionOrderId", savedTransaction.getId());
+            emailProps.put("amount", savedTransaction.getAmount());
+            emailProps.put("updatedAt", savedTransaction.getUpdatedAt().toString());
+            emailProps.put("subscriptionId", savedTransaction.getSubscriptionId());
+            emailProps.put("subscriptionName", savedTransaction.getSubscriptionName());
+            emailProps.put("price", purchasedSub.getPrice());
+            emailProps.put("duration", purchasedSub.getDuration());
+            emailProps.put("maxPost", purchasedSub.getMaxPost());
+            emailProps.put("priority", purchasedSub.getPriority());
+            emailProps.put("postExpiryDays", purchasedSub.getPostExpiryDays());
+            emailProps.put("startDate", savedUserSubscription.getStartDate().toString());
+            emailProps.put("endDate", savedUserSubscription.getEndDate().toString());
+
+            EmailNotificationDTO emailNotificationDTO = new EmailNotificationDTO(
+                    savedTransaction.getEmail(),
+                    "Purchase Subscription Successful: " + savedTransaction.getSubscriptionName(),
+                    "PURCHASE_SUBSCRIPTION_EMAIL",
+                    savedTransaction.getUserId(),
+                    emailProps
+            );
+
+            rabbitTemplate.convertAndSend(
+                    exchangeName,
+                    userPurchasedRoutingKey,
+                    emailNotificationDTO
+            );
+
+            log.info("Sent 'purchased subscription' message to RabbitMQ for user: {}", savedTransaction.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send 'purchased subscription' message for user {}: {}", savedTransaction.getEmail(), e.getMessage());
+        }
+
+        return savedTransaction;
     }
 
     // Helper: Quyết định lỗi nào thì retry (lỗi 5xx, lỗi timeout)
     private boolean isRetryable(Throwable throwable) {
         return throwable instanceof WebClientResponseException &&
                 ((WebClientResponseException) throwable).getStatusCode().is5xxServerError();
+    }
+
+    // Tác vụ định kỳ quét các gói thuê bao đã hết hạn và hạ cấp về Basic
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void scanAndDowngradeExpiredSubscriptions() {
+        log.info("Bắt đầu tác vụ quét các gói thuê bao đã hết hạn...");
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1. Lấy danh sách ứng viên hết hạn
+        List<UserSubscription> expiredCandidates = userSubscriptionRepository.findExpiredSubscriptions(now);
+
+        if (expiredCandidates.isEmpty()) {
+            return;
+        }
+
+        log.info("Tìm thấy {} ứng viên hết hạn. Bắt đầu xử lý từng user...", expiredCandidates.size());
+
+        int successCount = 0;
+
+        // 2. Xử lý từng user
+        for (UserSubscription candidate : expiredCandidates) {
+            try {
+                // Gọi hàm riêng biệt có Transactional cho từng user
+                // Để lock chỉ giữ trong tích tắc khi xử lý 1 người, xong là nhả ra ngay
+                downgradeSingleUser(candidate.getUserId(), now);
+                successCount++;
+            } catch (Exception e) {
+                log.error("Lỗi khi hạ cấp gói cho User {}: {}", candidate.getUserId(), e.getMessage());
+            }
+        }
+        log.info("Hoàn tất. Đã hạ cấp {}/{} gói.", successCount, expiredCandidates.size());
+    }
+
+    // Tách ra hàm riêng để Transaction và Lock chỉ phạm vi nhỏ này
+    @Transactional
+    public void downgradeSingleUser(Long userId, LocalDateTime now) {
+        // 1. Tìm lại và KHÓA dòng dữ liệu này (Pessimistic Write)
+        UserSubscription sub = userSubscriptionRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 2. DOUBLE-CHECK (Kiểm tra lại điều kiện quan trọng nhất)
+        // Phòng trường hợp user vừa mới gia hạn trong tíc tắc
+        if (sub.getEndDate().isAfter(now) || sub.getSubscriptionId() == 1L) {
+            log.info("User {} đã gia hạn hoặc không còn hết hạn nữa. Bỏ qua.", userId);
+            return;
+        }
+
+        // 3. Thực hiện hạ cấp
+        Long oldSubId = sub.getSubscriptionId();
+        sub.setSubscriptionId(1L);
+        sub.setStartDate(now);
+        sub.setEndDate(now.plusYears(100));
+
+        userSubscriptionRepository.save(sub);
+        log.info("Đã chuyển User {} từ gói {} về Basic.", sub.getUserId(), oldSubId);
     }
 }

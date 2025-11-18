@@ -24,5 +24,6 @@ rabbitmq:
     user: "subscription_user_queue"
   routing-key:
     user-created: "user.created"
+    user-purchased: "subscription.purchased"
 
 

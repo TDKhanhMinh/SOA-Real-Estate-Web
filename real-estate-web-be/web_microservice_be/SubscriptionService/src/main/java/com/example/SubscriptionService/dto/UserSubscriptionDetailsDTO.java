@@ -1,12 +1,15 @@
 package com.example.SubscriptionService.dto;
 
 import com.example.SubscriptionService.model.UserSubscription.Status;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+@Builder
 public record UserSubscriptionDetailsDTO (
         // Thông tin từ UserSubscription
        Long userId,
+       String email,
        LocalDateTime startDate,
        LocalDateTime endDate,
        Status status,

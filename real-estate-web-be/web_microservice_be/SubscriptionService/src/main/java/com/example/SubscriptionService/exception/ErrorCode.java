@@ -24,7 +24,9 @@ public enum ErrorCode {
     SUBSCRIPTION_NOT_FOUND(2001, "Subscription package not found"),
     CANNOT_INACTIVE_BASIC_SUBSCRIPTION(2002, "Cannot inactivate basic subscription package"),
     CANNOT_PURCHASE_DIFFERENT_PLAN(2003, "Cannot purchase different subscription plan while current plan is still active"),
-    TRANSACTION_FAILED(2004, "Transaction failed");
+    TRANSACTION_FAILED(2004, "Transaction failed"),
+    SUBSCRIPTION_ORDER_NOT_FOUND(2005, "Subscription order not found"),
+    ORDER_STATUS_INVALID(2006, "Invalid subscription order status");
 
     private final int code;
     private final String message;

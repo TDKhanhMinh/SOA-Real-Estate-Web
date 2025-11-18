@@ -14,10 +14,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -120,6 +118,61 @@ public class EmailService {
         switch (emailDto.template()) {
             case "TOP_UP_EMAIL":
                 body = templateEngine.process("transaction/top-up", context);
+                break;
+            default:
+                log.error("Không nhận dạng được template: {}", emailDto.template());
+                return;
+        }
+
+        boolean sent = sendEmail(emailDto.to(), subject, body);
+
+        if (sent) {
+            saveEmailLog(emailDto, body);
+        }
+    }
+
+    @RabbitListener(queues = "${rabbitmq.queue.subscription}")
+    public void handleSubscriptionEmail(EmailNotificationDTO emailDto) {
+        log.info("Nhận tác vụ email MUA SUBSCRIPTION: {}", emailDto.to());
+
+        String body = "";
+        String subject = emailDto.subject();
+
+        // Format data cho template
+        Map<String, Object> raw_data = emailDto.data();
+
+        Map<String, Object> formatted = new HashMap<>(raw_data);
+
+        if (raw_data.get("amount") != null) {
+            formatted.put("amount", EmailFormatUtils.vnd(raw_data.get("amount")));
+        }
+
+        if (raw_data.get("price") != null) {
+            formatted.put("price", EmailFormatUtils.vnd(raw_data.get("price")));
+        }
+
+        // --- FORMAT DATETIME ---
+        if (raw_data.get("updatedAt") != null) {
+            formatted.put("updatedAt",
+                    EmailFormatUtils.date(LocalDateTime.parse((String) raw_data.get("updatedAt"))));
+        }
+
+        if (raw_data.get("startDate") != null) {
+            formatted.put("startDate",
+                    EmailFormatUtils.date(LocalDateTime.parse((String) raw_data.get("startDate"))));
+        }
+
+        if (raw_data.get("endDate") != null) {
+            formatted.put("endDate",
+                    EmailFormatUtils.date(LocalDateTime.parse((String) raw_data.get("endDate"))));
+        }
+        Context context = new Context();
+        context.setVariable("data", formatted);
+        context.setVariable("to", emailDto.to());
+
+        switch (emailDto.template()) {
+            case "PURCHASE_SUBSCRIPTION_EMAIL":
+                body = templateEngine.process("subscription/subscription-purchase-success", context);
                 break;
             default:
                 log.error("Không nhận dạng được template: {}", emailDto.template());

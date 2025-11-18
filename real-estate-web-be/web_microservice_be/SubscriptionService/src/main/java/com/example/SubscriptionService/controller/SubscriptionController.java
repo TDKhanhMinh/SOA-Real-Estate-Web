@@ -1,6 +1,8 @@
 package com.example.SubscriptionService.controller;
 
+import com.example.SubscriptionService.dto.RevenueStatDTO;
 import com.example.SubscriptionService.dto.SubscriptionDTO;
+import com.example.SubscriptionService.dto.SubscriptionStatDTO;
 import com.example.SubscriptionService.dto.UserSubscriptionDetailsDTO;
 import com.example.SubscriptionService.exception.AppException;
 import com.example.SubscriptionService.model.Subscription;
@@ -11,6 +13,11 @@ import com.example.SubscriptionService.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +25,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -177,9 +185,142 @@ public class SubscriptionController {
         }
     }
 
+    /**
+     * User xem lịch sử mua subscription của mình
+     */
+    @GetMapping("/user/history")
+    public ResponseEntity<ApiResponse<Page<SubscriptionOrder>>> getMyHistory(
+            @AuthenticationPrincipal String userIdStr,
+            @PageableDefault(page = 0, size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        try {
+
+            Long userId;
+            try {
+                userId = Long.parseLong(userIdStr);
+            } catch (NumberFormatException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid user ID format", null));
+            }
+            Page<SubscriptionOrder> history = subscriptionService.getUserSubscriptionHistory(userId, pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy lịch sử thành công", history));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
     // ======================================================
     // ENDPOINTS CHO ADMIN (QUẢN TRỊ VIÊN)
     // ======================================================
+
+    /**
+     * [Admin] Gán gói thủ công cho user (Không tạo Order, chỉ cập nhật UserSubscription)
+     * Dùng để tặng gói, đền bù, hoặc sửa lỗi dữ liệu.
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/assign/user/{userId}/{subscriptionId}")
+    public ResponseEntity<ApiResponse<Void>> adminAssignSubscription(
+            @PathVariable Long userId,
+            @PathVariable Long subscriptionId) {
+        try {
+            subscriptionService.assignSubscriptionToUser(userId, subscriptionId);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(),
+                    "Gán gói thành công cho user " + userId, null));
+        } catch (AppException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(e.getErrorCode().getCode(), e.getErrorCode().getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error assigning subscription", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống", null));
+        }
+    }
+
+    /**
+     * [Admin] Duyệt đơn hàng bị treo (REVIEW_NEEDED)
+     * Params: ?approve=true (Duyệt) hoặc ?approve=false (Từ chối)
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/orders/{orderId}/review")
+    public ResponseEntity<ApiResponse<SubscriptionOrder>> reviewOrder(
+            @PathVariable Long orderId,
+            @RequestParam boolean approve) {
+        try {
+            SubscriptionOrder updatedOrder = subscriptionService.reviewSubscriptionOrder(orderId, approve);
+
+            String message = approve ? "Đã duyệt đơn hàng thành công." : "Đã từ chối đơn hàng.";
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), message, updatedOrder));
+
+        } catch (AppException e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error reviewing order", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống", null));
+        }
+    }
+
+    /**
+     * [Admin] Thống kê doanh thu theo ngày/tháng/năm
+     * VD: /subscription/admin/stats/revenue?startDate=2023-01-01&endDate=2023-12-31
+     * Kết quả: [{"period": "2023-01", "totalRevenue": 5000}, {"period": "2023-02", "totalRevenue": 7000}]
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/stats/revenue")
+    public ResponseEntity<ApiResponse<List<RevenueStatDTO>>> getRevenueStats(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        try {
+            List<RevenueStatDTO> stats = subscriptionService.getRevenueStatistics(startDate, endDate);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê doanh thu thành công", stats));
+        } catch (Exception e) {
+            log.error("Error getting revenue stats", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống", null));
+        }
+    }
+
+    /**
+     * [Admin] Thống kê số lượng người dùng theo từng gói
+     * VD: /subscription/admin/stats/users
+     * Kết quả: [{"subscriptionName": "Basic", "userCount": 100}, {"subscriptionName": "VIP", "userCount": 5}]
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/stats/users")
+    public ResponseEntity<ApiResponse<List<SubscriptionStatDTO>>> getUserStats() {
+        try {
+            List<SubscriptionStatDTO> stats = subscriptionService.getUserSubscriptionStats();
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê người dùng thành công", stats));
+        } catch (Exception e) {
+            log.error("Error getting user stats", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống", null));
+        }
+    }
+
+    /**
+     * [Admin] Danh sách User đang dùng gói cụ thể
+     * VD: /subscription/admin/users?subscriptionId=2&page=0&size=10
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/users")
+    public ResponseEntity<ApiResponse<Page<UserSubscriptionDetailsDTO>>> getUsersBySubscription(
+            @RequestParam Long subscriptionId,
+            @PageableDefault(page = 0, size = 20, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        try {
+            Page<UserSubscriptionDetailsDTO> users = subscriptionService.getUsersBySubscriptionPackage(subscriptionId, pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy danh sách user theo gói thành công", users));
+        } catch (AppException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("Error searching users by subscription", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống", null));
+        }
+    }
 
     /**
      * [Admin] Lấy tất cả các gói (bao gồm cả active/inactive)
@@ -195,6 +336,22 @@ public class SubscriptionController {
             log.error("Unexpected error fetching all subscriptions", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    /**
+     * [Admin] Xem lịch sử mua gói của 1 user cụ thể
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/user/{userId}/history")
+    public ResponseEntity<ApiResponse<Page<SubscriptionOrder>>> getUserHistoryByAdmin(
+            @PathVariable Long userId,
+            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        try{
+            Page<SubscriptionOrder> history = subscriptionService.getUserSubscriptionHistory(userId, pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy lịch sử user thành công", history));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
         }
     }
 
@@ -216,6 +373,31 @@ public class SubscriptionController {
             log.error("Unexpected error fetching subscription by ID", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error", null));
+        }
+    }
+
+    /**
+     * [Admin] Xem lịch sử toàn hệ thống (Search & Filter)
+     * VD: /subscription/admin/orders?status=COMPLETED&search=test@gmail.com&subscriptionId=2
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/orders")
+    public ResponseEntity<ApiResponse<Page<SubscriptionOrder>>> getAllHistory(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) SubscriptionOrder.Status status,
+            @RequestParam(required = false) Long subscriptionId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @PageableDefault(page = 0, size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        try {
+            Page<SubscriptionOrder> history = subscriptionService.getAllSubscriptionHistory(
+                    search, status, subscriptionId, startDate, endDate, pageable);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy dữ liệu thành công", history));
+        } catch (Exception e) {
+            log.error("Error fetching subscription history", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi hệ thống", null));
         }
     }
 

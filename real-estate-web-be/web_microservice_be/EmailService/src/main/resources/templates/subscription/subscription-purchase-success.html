@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Mua gói Subscription thành công</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        .email-wrapper {
+            padding: 40px 0;
+            width: 100%;
+            background-color: #f5f7fa;
+        }
+
+        .email-container {
+            max-width: 650px;
+            margin: auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #0d6efd;
+            padding: 28px 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 30px 40px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0d6efd;
+            margin-bottom: 12px;
+        }
+
+        .info-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 8px;
+            margin: 20px 0 30px 0;
+        }
+
+        .info-item {
+            margin: 10px 0;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #111;
+        }
+
+        .footer {
+            padding: 20px;
+            text-align: center;
+            color: #777;
+            font-size: 13px;
+            border-top: 1px solid #eee;
+        }
+
+        .highlight {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-wrapper">
+    <div class="email-container">
+
+        <div class="header">
+            <h1>Mua gói Subscription thành công!</h1>
+        </div>
+
+        <div class="content">
+
+            <p>
+                Xin chào,
+                <br/>
+                Chúc mừng bạn đã đăng ký thành công gói
+                <strong class="highlight" th:text="${data.subscriptionName}">Tên gói</strong>.
+            </p>
+
+            <div class="section-title">Thông tin đơn hàng</div>
+            <div class="info-box">
+
+                <div class="info-item">
+                    <span class="label">Mã đơn hàng:</span>
+                    <span class="value" th:text="${data.subscriptionOrderId}">Mã đơn hàng</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Mã Subscription:</span>
+                    <span class="value" th:text="${data.subscriptionId}">Mã Subscription</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Giá gói:</span>
+                    <span class="value" th:text="${data.price}">Giá gói</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Thời hạn:</span>
+                    <span class="value" th:text="${data.duration}">Thời hạn</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Ngày bắt đầu:</span>
+                    <span class="value" th:text="${data.startDate}">Ngày bắt đầu</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Ngày hết hạn:</span>
+                    <span class="value" th:text="${data.endDate}">Ngày hết hạn</span>
+                </div>
+
+            </div>
+
+            <div class="section-title">Chi tiết quyền lợi</div>
+            <div class="info-box">
+
+                <div class="info-item">
+                    <span class="label">Số lượng tin đăng tối đa:</span>
+                    <span class="value" th:text="${data.maxPost}">Tin đăng tối đa</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Ưu tiên hiển thị:</span>
+                    <span class="value" th:text="${data.priority}">Độ ưu tiên</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Thời gian tin tồn tại:</span>
+                    <span class="value" th:text="${data.postExpiryDays}">Post Expiry Days</span>
+                </div>
+
+            </div>
+
+            <p>
+                Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ đội ngũ hỗ trợ để được trợ giúp.
+            </p>
+
+            <p style="margin-top: 30px;">
+                Trân trọng,<br/>
+                <strong>Đội ngũ Hỗ trợ</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            © 2025 Hệ thống của chúng tôi. Mọi quyền được bảo lưu.
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
