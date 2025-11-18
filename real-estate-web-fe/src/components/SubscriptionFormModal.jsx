@@ -11,10 +11,6 @@ const initialFormData = {
     postExpiryDays: '',
 };
 
-// ----------------------------------------------------
-// BƯỚC 1: DI CHUYỂN INPUTFIELD RA NGOÀI
-// Thêm props: formData, errors, handleChange
-// ----------------------------------------------------
 const InputField = ({ name, label, type = 'text', required = false, icon: Icon, formData, errors, handleChange, ...rest }) => (
     <div className="flex flex-col group">
         <label htmlFor={name} className="mb-2 text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -84,7 +80,6 @@ export function SubscriptionFormModal({ show, onClose, onSubmit, initialData }) 
     };
 
     const validateForm = () => {
-        // ... (Logic validate giữ nguyên)
         const newErrors = {};
         const { name, price, duration, description, maxPost, priority, postExpiryDays } = formData;
 

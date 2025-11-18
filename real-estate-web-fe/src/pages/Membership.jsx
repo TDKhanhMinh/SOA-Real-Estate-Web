@@ -2,18 +2,27 @@ import { useState, useEffect } from 'react';
 import { HiCheck, HiSparkles, HiClock, HiTrendingUp } from 'react-icons/hi';
 import { subscriptionService } from '../services/subscriptionService';
 import { formatCurrency } from '../utils/formatCurrency';
+import { SubscriptionDetailModal } from '../components/SubscriptionDetailModal';
+import { toast } from 'react-toastify';
+import { getDurationText } from './../utils/getDurationText';
 
 
 
 export default function Membership() {
     const [plans, setPlans] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedSubscription, setSelectedSubscription] = useState(null)
 
-    const getDurationText = (duration) => {
-        if (duration > 36000) return "/năm";
-        if (duration === 30) return "/tháng";
-        return `/${duration} ngày`;
-    };
+    const handleBuySubscription = async () => {
+        try {
+            await subscriptionService.buySubscriptions(selectedSubscription.id);
+            setShowModal(false)
+            toast.success("Bạn đã đặt mua gói hội viên thành công")
+        } catch (error) {
+            toast.error(error)
 
+        }
+    }
     useEffect(() => {
         fetchSubscriptions();
     }, []);
@@ -120,6 +129,10 @@ export default function Membership() {
 
 
                                 <button
+                                    onClick={() => {
+                                        setSelectedSubscription(plan)
+                                        setShowModal(true)
+                                    }}
                                     className={`w-full font-semibold py-3.5 rounded-xl transition-all duration-300 mb-6 ${plan.name === "Premium"
                                         ? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                         : "bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
@@ -156,7 +169,12 @@ export default function Membership() {
                         </div>
                     ))}
                 </div>
-
+                <SubscriptionDetailModal
+                    show={showModal}
+                    onClose={() => setShowModal(false)}
+                    onBuy={handleBuySubscription}
+                    data={selectedSubscription}
+                />
 
                 <div className="text-center mt-12 mb-8">
                     <p className="text-gray-600 text-sm">

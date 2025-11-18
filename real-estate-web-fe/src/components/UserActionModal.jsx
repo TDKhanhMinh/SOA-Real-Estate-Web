@@ -2,6 +2,8 @@ import { BsPersonFill, BsClockHistory, BsWalletFill, BsX } from 'react-icons/bs'
 import { InfoModal } from './InfoModal';
 import { HistoryModal } from './HistoryModal';
 import { BalanceModal } from './BalanceModal';
+import { SubscriptionHistoryModal } from './SubscriptionHistoryModal';
+import { UserSubscriptionDetailsModal } from './UserSubscriptionDetailsModal';
 
 export const UserActionsModal = ({ isOpen, userId, onClose }) => {
 
@@ -46,6 +48,8 @@ export const UserActionsModal = ({ isOpen, userId, onClose }) => {
                     <InfoModal userId={userId} />
                     <HistoryModal userId={userId} />
                     <BalanceModal userId={userId} />
+                    <SubscriptionHistoryModal userId={userId} />
+                    <UserSubscriptionDetailsModal userId={userId} />
                 </div>
             </div>
         </div>
