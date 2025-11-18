@@ -45,3 +45,10 @@ spring:
             - Path=/user/**
           filters:
             - JwtAuthenticationFilter
+
+        - id: upload-service
+          uri: http://upload-service:8086
+          predicates:
+            - Path=/upload/**
+          filters:
+            - JwtAuthenticationFilter

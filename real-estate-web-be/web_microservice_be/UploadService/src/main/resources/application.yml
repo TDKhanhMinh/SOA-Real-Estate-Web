@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: upload-service
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+
+server:
+  port: 8086
+
+cloudinary:
+  cloud-name: "dnweunyqc"
+  api-key: "327367697125324"
+  api-secret: "TxuazT1PAjJX2h08PzUjqdeagAk"

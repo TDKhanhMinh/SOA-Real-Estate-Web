@@ -33,6 +33,7 @@ services:
       - subscription-service
       - email-service
       - user-service
+      - upload-service
     networks:
       - microservice-network
     restart: unless-stopped
@@ -116,6 +117,14 @@ services:
       - "8081:8081"
     restart: unless-stopped
 
+  # Upload Service
+  upload-service:
+    build: ./UploadService
+    container_name: upload-service
+    networks:
+      - microservice-network
+    restart: unless-stopped
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -128,7 +137,6 @@ services:
     networks:
       - microservice-network
     restart: unless-stopped
-
 
 # Network và Volumes
 networks:
