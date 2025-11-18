@@ -68,7 +68,7 @@ public class SubscriptionController {
                     "Lấy chi tiết gói subscription thành công.", dto));
         } catch (AppException e) {
             log.error("Error fetching subscription details: {}", e.getErrorCode().getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND) // Giống getProfile khi không tìm thấy
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getErrorCode().getMessage(), null));
         } catch (Exception e) {
             log.error("Unexpected error fetching subscription details", e);
