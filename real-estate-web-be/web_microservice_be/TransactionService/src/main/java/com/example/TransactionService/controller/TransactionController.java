@@ -40,7 +40,6 @@ public class TransactionController {
     /**
      * User nạp tiền vào tài khoản ví
      */
-
     @PostMapping("/top-up")
     public ResponseEntity<ApiResponse<TopUpResponse>> topUpAccount(@AuthenticationPrincipal String userIdStr, @Validated @RequestBody TopUpRequest topUpRequest) {
         logger.info("Nhận yêu cầu nạp tiền vào tài khoản"+userIdStr);
@@ -105,7 +104,6 @@ public class TransactionController {
     /**
      * User mua gói subscription (giảm trừ tiền trong ví)
      */
-    @PreAuthorize("hasRole('SERVICE')")
     @PostMapping("/purchase")
     public ResponseEntity<ApiResponse<PurchaseResponse>> processPurchase(@AuthenticationPrincipal String userIdStr, @RequestBody PurchaseRequest purchaseRequest) {
         try {

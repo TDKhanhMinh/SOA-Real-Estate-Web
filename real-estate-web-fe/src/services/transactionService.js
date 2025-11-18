@@ -18,7 +18,7 @@ export const transactionService = {
         return res.data.data;
     },
     getTransactionSubscription: async (data) => {
-        const res = await http.get("transaction//history/purchase", data);
+        const res = await http.get("transaction/history/purchase", data);
         return res.data.data;
     },
     getUserTransaction: async () => {
@@ -28,6 +28,10 @@ export const transactionService = {
 
     createTransaction: async (data) => {
         const res = await http.post(`transaction/top-up`, data);
+        return res.data.data;
+    },
+    createBuyingSubscription: async (data) => {
+        const res = await http.post(`transaction/purchase`, data);
         return res.data.data;
     }
 
