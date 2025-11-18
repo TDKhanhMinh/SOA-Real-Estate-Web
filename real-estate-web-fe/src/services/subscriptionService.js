@@ -3,6 +3,7 @@ import http from "./http";
 export const subscriptionService = {
     getSubscriptionsByAdmin: async () => {
         const res = await http.get("subscription/admin/");
+        console.log("subbb", res);
         return res.data.data;
     },
     getSubscriptionsByUser: async () => {

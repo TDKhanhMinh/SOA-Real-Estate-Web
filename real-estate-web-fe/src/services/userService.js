@@ -9,6 +9,20 @@ export const userService = {
         const res = await http.get(`user/${id}`);
         return res.data.data;
     },
+    findUserByEmailOrName: async (keyword = "", page = 0, size = 10) => {
+        const params = {
+            page,
+            size,
+            sort: "id,asc"
+        };
+        if (keyword) {
+            params.keyword = keyword;
+        }
+        const res = await http.get(`user/search`, { params });
+        console.log("Search", res.data);
+
+        return res.data.data;
+    },
     getProfile: async () => {
         const res = await http.get("user/profile");
         return res.data.data;
