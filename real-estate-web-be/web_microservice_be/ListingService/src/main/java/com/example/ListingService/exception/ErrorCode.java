@@ -19,7 +19,14 @@ public enum ErrorCode {
     INVALID_OLD_PASSWORD(1005, "Invalid old password"),
     USER_INACTIVE(1004, "User is inactive"),
     INVALID_OTP(1006, "Invalid OTP code"),
-    OTP_EXPIRED(1007, "OTP code has expired");
+    OTP_EXPIRED(1007, "OTP code has expired"),
+
+    PROPERTY_NOT_FOUND(4001, "Property not found"),
+    INVALID_ACTION(4002, "Invalid action on property"),
+    POST_LIMIT_EXCEEDED(4003, "Property post limit exceeded"),
+    SUBSCRIPTION_NOT_FOUND(5001, "Subscription not found"),
+    SUBSCRIPTION_INACTIVE(5002, "Subscription is inactive"),
+    SUBSCRIPTION_FAILED(5003, "Subscription operation failed");
 
     private final int code;
     private final String message;

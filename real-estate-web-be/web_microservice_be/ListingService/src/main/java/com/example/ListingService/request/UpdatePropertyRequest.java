@@ -51,6 +51,7 @@ public class UpdatePropertyRequest {
     @Positive(message = "AREA_INVALID")
     private Double area;
 
+    @Size(min = 3, max = 10, message = "IMAGES_QUANTITY_INVALID")
     private List<String> imageUrls;
 
     @Email(message = "EMAIL_INVALID")
