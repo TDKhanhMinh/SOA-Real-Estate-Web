@@ -128,18 +128,20 @@ export default function Membership() {
                                 </div>
 
 
-                                <button
-                                    onClick={() => {
-                                        setSelectedSubscription(plan)
-                                        setShowModal(true)
-                                    }}
-                                    className={`w-full font-semibold py-3.5 rounded-xl transition-all duration-300 mb-6 ${plan.name === "Premium"
-                                        ? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                                        : "bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
-                                        }`}
-                                >
-                                    Mua ngay
-                                </button>
+                                {plan?.name !== 'Basic' &&
+                                    <button
+                                        onClick={() => {
+                                            setSelectedSubscription(plan)
+                                            setShowModal(true)
+                                        }}
+                                        className={`w-full font-semibold py-3.5 rounded-xl transition-all duration-300 mb-6 ${plan.name === "Premium"
+                                            ? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                            : "bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
+                                            }`}
+                                    >
+                                        Mua ngay
+                                    </button>
+                                }
 
 
                                 <div>
