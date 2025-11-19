@@ -99,6 +99,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 return true;
             }
 
+            if(existingUserSubscription.get().getEmail().isEmpty()){
+                existingUserSubscription.get().setEmail(email);
+                userSubscriptionRepository.save(existingUserSubscription.get());
+                log.info("Cập nhật email cho user subscription của user {}", userId);
+            }
+
             if (existingUserSubscription.get().getSubscriptionId() == 1L) {
                 log.info("User {} đã có basic subscription, không tạo mới.", userId);
                 return false;
