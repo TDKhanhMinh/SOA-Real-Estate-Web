@@ -7,7 +7,6 @@ export const authService = {
         console.log("Login data return",res.data.data.user);
         localStorage.setItem("user", JSON.stringify(res.data.data.user))
         console.log("Login data return",res.data.data.token);
-
         return res.data;
     },
     register: async (name, password, email, phone) => {

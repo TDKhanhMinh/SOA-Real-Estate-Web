@@ -28,7 +28,7 @@ public class UploadController {
             String imageUrl = cloudinaryService.uploadImage(file);
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Upload thành công", imageUrl));
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST) // Trả về 400 nếu file lỗi
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         }
     }

@@ -19,7 +19,6 @@ import {
     BsClipboardData
 } from 'react-icons/bs';
 import { FaTimes } from 'react-icons/fa';
-import { formatDate } from './../utils/formatDate';
 import { getDurationText } from './../utils/getDurationText';
 import { formatCurrency } from '../utils/formatCurrency';
 import { formatDateTime } from './../utils/formatDateTime';
@@ -72,8 +71,8 @@ export default function MySubscription() {
 
     const renderSubscriptionName = (id) => {
         const subs = plans.find(subs => subs.id === id);
-        console.log("sub buy", subs);
-        return subs.name;
+        console.log("sub buy name", subs);
+        return subs?.name||"N/A";
     }; useEffect(() => {
         fetchSubscriptions();
     }, []);
@@ -91,7 +90,7 @@ export default function MySubscription() {
             setIsLoading(true);
             setError(null);
             const response = await subscriptionService.getUserSubscriptions();
-            console.log("user subs", response);
+            console.log("user subs his", response);
 
             if (response) {
                 setSubscription(response);
@@ -258,7 +257,7 @@ export default function MySubscription() {
                                     <p className="text-blue-100 text-lg">{details.description}</p>
                                 </div>
                                 {
-                                    subscription.name === 'basic' &&
+                                   
                                     <div>
                                         <button onClick={handlerCancelSubscription} className="inline-flex items-center gap-2 bg-red-500  px-4 py-1.5 rounded-full text-sm font-semibold mb-3 hover:bg-red-700">
                                             <X className="text-base" />
@@ -442,7 +441,7 @@ export default function MySubscription() {
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên gói</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày mua</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày hết hạn</th>
+                            {/* <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày hết hạn</th> */}
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
                         </tr>
@@ -456,9 +455,9 @@ export default function MySubscription() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {formatDateTime(item.createdAt)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {formatDate(item.expiresAt)}
-                                </td>
+                                {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    {formatDateTime(item.updatedAt)}
+                                </td> */}
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                                     {item ? formatCurrency(item.amount) : 'N/A'}
                                 </td>

@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { transactionService } from "../../services/transactionService";
 import { formatDateTime } from "../../utils/formatDateTime";
 import { formatCurrency } from "../../utils/formatCurrency";
+import { subscriptionService } from "../../services/subscriptionService";
 
 export default function Payments() {
 
     const [notification, setNotification] = useState(null);
-
     const [filters, setFilters] = useState({
         search: '',
         status: '',
@@ -17,6 +17,7 @@ export default function Payments() {
     const [size] = useState(10);
 
     const [transactionsPage, setTransactionsPage] = useState(null);
+    const [subscriptionPage, setSubscriptionPage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -44,9 +45,11 @@ export default function Payments() {
         try {
 
             const apiResponse = await transactionService.getTransactionByAdmin(params);
+            const apiSubsResponse = await subscriptionService.getSubscriptionsPaymentHistory(params);
             console.log("Trans", apiResponse);
-
-            setTransactionsPage(apiResponse)
+            console.log("Subs his", apiSubsResponse);
+            setTransactionsPage(apiResponse);
+            setSubscriptionPage(apiSubsResponse);
         } catch (err) {
             console.error('Lỗi khi fetch giao dịch:', err);
             setError(err.message || 'Lỗi hệ thống, không thể tải dữ liệu nạp tiền.');
@@ -103,7 +106,7 @@ export default function Payments() {
                     onChange={handleFilterChange}
                     className="border p-2 rounded w-full"
                 />
-                
+
                 <input
                     type="date"
                     name="startDate"
@@ -143,7 +146,7 @@ export default function Payments() {
                         <div className="col-span-2 text-center">Trạng thái</div>
                     </div>
 
-                    
+
 
                     {transactionsPage && transactionsPage.content.map((tx) => (
                         <div key={tx.id} className="bg-white shadow mt-2">
@@ -160,6 +163,29 @@ export default function Payments() {
                                 </div>
                                 <div className="col-span-2 text-center">
                                     {tx.paymentMethod || 'N/A'}
+                                </div>
+                                <div className="text-center text-red-500">
+                                    {formatCurrency(tx.amount)}
+                                </div>
+                                <div className="col-span-2 text-center">{tx.status}</div>
+                            </div>
+                        </div>
+                    ))}
+                    {subscriptionPage && subscriptionPage.content.map((tx) => (
+                        <div key={tx.id} className="bg-white shadow mt-2">
+                            <div className="grid grid-cols-10 items-center p-4">
+                                <div>{tx.id}</div>
+                                <div className="col-span-2 text-center">
+                                    {tx.email ? tx.email : 'N/A'}
+                                </div>
+                                <div className="text-center">
+                                    {formatDateTime(tx.updatedAt)}
+                                </div>
+                                <div className="text-center">
+                                    {tx.subscriptionName || 'Nạp tiền'}
+                                </div>
+                                <div className="col-span-2 text-center">
+                                    {tx.paymentMethod || 'Online'}
                                 </div>
                                 <div className="text-center text-red-500">
                                     {formatCurrency(tx.amount)}

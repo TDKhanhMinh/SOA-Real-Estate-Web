@@ -3,6 +3,7 @@ import Button from "../components/Button";
 import EditProfileModal from "../components/EditProfileModal";
 import ImageUploadModal from "../components/UploadImageModal";
 import { userService } from "../services/userService";
+import { uploadService } from "../services/uploadService";
 
 export default function Profile() {
     const [isModalOpen, setModalOpen] = useState(false);
@@ -44,15 +45,12 @@ export default function Profile() {
             try {
                 const file = files[0];
                 const formData = new FormData();
-                formData.append("avatar", file);
-
+                formData.append("file", file);
                 setUser(preUser => ({ ...preUser, avatarUrl: URL.createObjectURL(file) }));
                 setImageModalOpen(false);
-
-                const updatedUser = await userService.uploadAvatar(formData);
-
-                setUser(updatedUser);
-
+                const updatedUser = await uploadService.uploadImage(formData);
+                console.log("Image", updatedUser);
+                // setUser(updatedUser);
             } catch (error) {
                 console.error("Lỗi tải ảnh lên:", error);
                 fetchProfile();
