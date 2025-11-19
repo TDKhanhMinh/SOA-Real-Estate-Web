@@ -19,7 +19,8 @@ public enum ErrorCode {
     INVALID_OLD_PASSWORD(1005, "Invalid old password"),
     USER_INACTIVE(1004, "User is inactive"),
     INVALID_OTP(1006, "Invalid OTP code"),
-    OTP_EXPIRED(1007, "OTP code has expired");
+    OTP_EXPIRED(1007, "OTP code has expired"),
+    INVALID_CREDENTIALS(1008, "Invalid credentials");
 
     private final int code;
     private final String message;

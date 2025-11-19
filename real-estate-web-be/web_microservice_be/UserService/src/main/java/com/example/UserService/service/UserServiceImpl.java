@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -292,22 +294,29 @@ public class UserServiceImpl implements UserService {
     // Verify user credentials and generate JWT
     @Override
     public AuthResponse verify(User user) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-        );
 
-        if (authentication.isAuthenticated()) {
-            user = userRepo.findByEmail(user.getEmail())
-                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        try {
 
-            if(!user.getIsActive()) {
-                throw new AppException(ErrorCode.USER_INACTIVE);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
+            );
+
+
+            if (authentication.isAuthenticated()) {
+                user = userRepo.findByEmail(user.getEmail())
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+                if (!user.getIsActive()) {
+                    throw new AppException(ErrorCode.USER_INACTIVE);
+                }
+
+                String token = jwtUtil.generateToken(user.getId(), String.valueOf(user.getRole()));
+
+                return new AuthResponse(token, userMapper.toUserDTO(user));
+
             }
-
-            String token = jwtUtil.generateToken(user.getId(), String.valueOf(user.getRole()));
-
-            return new AuthResponse(token, userMapper.toUserDTO(user));
-
+        } catch (BadCredentialsException | InternalAuthenticationServiceException e) {
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
         return null;
     }
