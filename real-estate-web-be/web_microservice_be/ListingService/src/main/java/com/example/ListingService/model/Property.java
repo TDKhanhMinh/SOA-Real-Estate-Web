@@ -78,6 +78,9 @@ public class Property {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @Column(name = "reject_reason", columnDefinition = "TEXT")
+    private String rejectReason;
+
     @Column(name = "realtor_id")
     private Long realtorId;
 
