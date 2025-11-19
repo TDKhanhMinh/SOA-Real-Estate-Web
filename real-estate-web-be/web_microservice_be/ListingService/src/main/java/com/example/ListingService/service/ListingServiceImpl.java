@@ -560,26 +560,15 @@ public class ListingServiceImpl implements ListingService{
                 Property.Status.HIDDEN
         );
 
-        List<Property> expiredProperties = propertyRepository.findAllByStatusInAndExpiresAtBeforeAndIsDeletedFalse(
-                activeStatuses, now
+        // Chạy 1 lệnh Update trực tiếp xuống DB
+        int updatedCount = propertyRepository.bulkExpireProperties(
+                Property.Status.EXPIRED,
+                activeStatuses,
+                now
         );
 
-        if (expiredProperties.isEmpty()) {
-            log.info("Không tìm thấy bài đăng nào hết hạn.");
-            return;
+        if (updatedCount > 0) {
+            log.info("Đã chuyển {} bài sang EXPIRED.", updatedCount);
         }
-
-        log.info("Tìm thấy {} bài đăng hết hạn. Đang chuyển sang EXPIRED...", expiredProperties.size());
-
-        // 2. Cập nhật trạng thái hàng loạt
-        // Cách này nhanh hơn loop từng cái save
-        for (Property property : expiredProperties) {
-            property.setStatus(Property.Status.EXPIRED);
-            property.setUpdatedAt(now);
-        }
-
-        propertyRepository.saveAll(expiredProperties);
-
-        log.info("Hoàn tất. Đã chuyển {} bài đăng sang trạng thái EXPIRED.", expiredProperties.size());
     }
 }

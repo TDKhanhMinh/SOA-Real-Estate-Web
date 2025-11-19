@@ -2,10 +2,7 @@ package com.example.ListingService.repository;
 
 import com.example.ListingService.model.Property;
 import jakarta.persistence.LockModeType;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -47,4 +44,13 @@ public interface PropertyRepository extends JpaRepository<Property, Long>, JpaSp
             List<Property.Status> statuses,
             LocalDateTime now
     );
+
+    @Modifying(clearAutomatically = true) // Clear cache hibernate để tránh dữ liệu cũ
+    @Query("UPDATE Property p SET p.status = :newStatus, p.updatedAt = :now " +
+            "WHERE p.status IN :oldStatuses " +
+            "AND p.expiresAt < :now " +
+            "AND p.isDeleted = false")
+    int bulkExpireProperties(@Param("newStatus") Property.Status newStatus,
+                             @Param("oldStatuses") List<Property.Status> oldStatuses,
+                             @Param("now") LocalDateTime now);
 }
