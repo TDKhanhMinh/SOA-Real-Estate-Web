@@ -46,6 +46,8 @@ export const subscriptionService = {
     },
     buySubscriptions: async (subscriptionId) => {
         const res = await http.post(`subscription/user/purchase/${subscriptionId}`);
+        console.log("sub buy data", res.data);
+
         return res.data.data;
     },
     getUserSubscriptionsRevenue: async (data) => {

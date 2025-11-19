@@ -46,14 +46,18 @@ export default function Profile() {
                 const file = files[0];
                 const formData = new FormData();
                 formData.append("file", file);
-                setUser(preUser => ({ ...preUser, avatarUrl: URL.createObjectURL(file) }));
                 setImageModalOpen(false);
-                const updatedUser = await uploadService.uploadImage(formData);
-                console.log("Image", updatedUser);
-                // setUser(updatedUser);
+                const updatedUserImage = await uploadService.uploadImage(formData);
+                console.log("Image", updatedUserImage);
+                const dataUpdate = {
+                    name: user.name,
+                    phone: user.phone,
+                    avatarUrl: updatedUserImage
+                }
+                await userService.updateProfile(dataUpdate);
+                await fetchProfile();
             } catch (error) {
                 console.error("Lỗi tải ảnh lên:", error);
-                fetchProfile();
             }
         }
     };
