@@ -7,6 +7,7 @@ import {
     HiOutlineShoppingBag, HiOutlineBookOpen, HiOutlineTicket, HiOutlineCollection
 } from "react-icons/hi";
 import { transactionService } from "../services/transactionService";
+import { userService } from "../services/userService";
 
 
 const formatCurrency = (balance) => {
@@ -56,12 +57,7 @@ const menuSections = [
 export default function Sidebar() {
     const navigate = useNavigate();
     const [wallet, setWallet] = useState(null);
-    const [user, setUser] = useState({
-        name: "Tên người dùng",
-        avatarUrl: "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg",
-        accountBalance: 12000000,
-        paymentCode: "1234567890",
-    });
+    const [user, setUser] = useState();
     const [isCopied, setIsCopied] = useState(false);
 
     useEffect(() => {
@@ -80,6 +76,16 @@ export default function Sidebar() {
                 console.error("Failed to fetch wallet:", err);
             }
         };
+        const fetchProfile = async () => {
+            try {
+                const data = await userService.getProfile();
+                console.log("Profile data return", data);
+                setUser(data);
+            } catch (error) {
+                console.error("Lỗi khi tải profile:", error);
+            }
+        };
+        fetchProfile();
         loadUserFromStorage();
         fetchUserWallet()
     }, []);
@@ -105,10 +111,10 @@ export default function Sidebar() {
                 <div className="flex flex-col items-center bg-gray-100 rounded-lg p-4">
                     <img
                         className="rounded-full w-12 h-12 object-cover mb-2"
-                        src={user.avatarUrl || "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
+                        src={user?.avatarUrl || "https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg"}
                         alt="photo"
                     />
-                    <span className="font-bold text-gray-800">{user.name}</span>
+                    <span className="font-bold text-gray-800">{user?.name}</span>
                 </div>
 
 
@@ -127,7 +133,7 @@ export default function Sidebar() {
                     >
                         <h6 className="font-semibold text-sm">Mã chuyển khoản</h6>
                         <div className="flex items-center justify-center gap-2">
-                            <p className="text-sm text-blue-600 font-bold">{user.paymentCode}</p>
+                            <p className="text-sm text-blue-600 font-bold">{user?.paymentCode||"N/A"}</p>
                             {isCopied ? (
                                 <HiCheckCircle className="w-4 h-4 text-green-500" />
                             ) : (
