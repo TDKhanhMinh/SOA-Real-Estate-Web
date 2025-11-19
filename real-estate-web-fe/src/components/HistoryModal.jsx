@@ -11,8 +11,8 @@ const formatTransactionType = (type) => {
         case 'TOP_UP':
             return 'Nạp tiền vào tài khoản';
         // Thêm các loại khác nếu có
-        // case 'PAYMENT':
-        //     return 'Thanh toán gói VIP';
+        case 'PURCHASE_SUBSCRIPTION':
+            return 'Thanh toán gói thành viên';
         default:
             return type;
     }
@@ -102,7 +102,7 @@ export const HistoryModal = ({ userId }) => {
                         <div className="flex-shrink-0">
                             <p className={`text-lg font-bold ${transaction.transactionType === 'TOP_UP' ? 'text-green-700' : 'text-red-700'
                                 }`}>
-                                {transaction.transactionType === 'TOP_UP' ? '+' : '-'}
+                                {transaction.transactionType === 'TOP_UP' ? '+' : ''}
                                 {formatCurrency(transaction.amount)}
                             </p>
                         </div>
