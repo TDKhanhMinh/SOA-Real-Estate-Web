@@ -95,7 +95,7 @@ export default function Post() {
             console.log("Payload:", finalPayload);
             await listingService.createListing(finalPayload);
             toast.success("Thêm bài đăng thành công");
-            navigate('/account/drafts');
+            navigate('/account/listing');
         } catch (error) {
             const errorMsg = error.response?.data?.message || "Có lỗi xảy ra";
 

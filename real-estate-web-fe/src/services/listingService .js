@@ -1,6 +1,22 @@
 import http from './http';
 export const listingService = {
-    // /property
+    // /public
+    getAllListing: async (search, transactionType, propertyType, minPrice, maxPrice, page = 0, size = 10) => {
+        const params = {
+            search,
+            transactionType,
+            propertyType,
+            minPrice,
+            maxPrice,
+            page,
+            size,
+        };
+        console.log("params", params);
+
+        const res = await http.get(`/listing/public`, { params });
+        console.log("data lis", res);
+        return res.data;
+    },
     // /property/{id}
     // /property/{id}/submit
     submitDraftListing: async (id) => {
@@ -13,7 +29,15 @@ export const listingService = {
         return res.data;
     },
     // /property/{id}/sold
+    hasSoldListing: async (id) => {
+        const res = await http.post(`/listing/property/${id}/sold`);
+        return res.data;
+    },
     // /property/{id}/rented
+    hasRentedListing: async (id) => {
+        const res = await http.post(`/listing/property/${id}/rented`);
+        return res.data;
+    },
     // /property/{id}
     updateListing: async (id, data) => {
         const res = await http.put(`/listing/property/${id}`, data);
@@ -25,12 +49,22 @@ export const listingService = {
             status,
             page,
             size,
-            sort: "id,asc"
         };
         const res = await http.get(`/listing/my-listings`, { params });
+        console.log("user lis", res.data);
+
         return res.data;
     },
     // /my-history
+    transferHistoryListing: async (status, page = 0, size = 10) => {
+        const params = {
+            status,
+            page,
+            size,
+        };
+        const res = await http.get(`/listing/my-history`, { params });
+        return res.data;
+    },
     // /property/{id}
     deleteListing: async (id) => {
         const res = await http.delete(`/listing/property/${id}`);
@@ -42,9 +76,8 @@ export const listingService = {
             status,
             page,
             size,
-            sort: "id,asc"
         };
-        const res = await http.get(`/listing/admin/property/pending`, { params });
+        const res = await http.get(`/listing/admin/properties`, { params });
         return res.data;
     },
     // /admin/user/{userId}/properties
@@ -54,7 +87,6 @@ export const listingService = {
             includeDeleted,
             page,
             size,
-            sort: "id,asc"
         };
         const res = await http.get(`/listing/admin/user/$${userId}/properties`, { params });
         return res.data;
@@ -65,8 +97,12 @@ export const listingService = {
         const res = await http.post(`/listing/admin/property/${id}/approve`, data);
         return res.data;
     },
-    // /public
     // /public/{id}
+    getListingDetails: async (id) => {
+        const res = await http.get(`/listing/public/${id}`);
+        return res.data.data;
+    },
+    // /property
     createListing: async (data) => {
         const res = await http.post(`/listing/property`, data);
         return res.data;

@@ -40,6 +40,11 @@ export const subscriptionService = {
         const res = await http.post(`subscription/admin`, data);
         return res.data.data;
     },
+    // /admin/assign/user/{userId}/{subscriptionId}
+    donateSubscriptions: async (userId, subscriptionId) => {
+        const res = await http.post(`subscription/admin/assign/user/${userId}/${subscriptionId}`);
+        return res.data.data;
+    },
     cancelSubscriptions: async () => {
         const res = await http.post(`subscription/user/cancel`);
         return res.data.data;
@@ -55,7 +60,7 @@ export const subscriptionService = {
         return res.data.data;
     },
     getUserPerSubscriptions: async () => {
-        const res = await http.get("subscription//admin/stats/users");
+        const res = await http.get("subscription/admin/stats/users");
         return res.data.data;
     },
 

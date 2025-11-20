@@ -5,13 +5,12 @@ import PlaceSection from "../components/PlacesSection";
 import SearchForm from "../components/SearchForm";
 
 export default function Home() {
-  
 
     return (
         <div className="pt-20">
             <Carousel />
             <SearchForm />
-            <PropertyList/>
+            <PropertyList />
             <PlaceSection />
             <NewsSection />
         </div>
