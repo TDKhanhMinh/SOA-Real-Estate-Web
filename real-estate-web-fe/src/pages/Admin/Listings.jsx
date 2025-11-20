@@ -1,139 +1,242 @@
 import { useState, useEffect } from "react";
+import { listingService } from "../../services/listingService ";
+import { toast } from "react-toastify";
+import { formatCurrency } from "../../utils/formatCurrency";
+import { getStatusLabel } from "../../utils/statusMapping";
+
+const ADMIN_STATUS_TABS = [
+    { code: "ALL", label: "Tất cả" },
+    { code: "PENDING_APPROVAL", label: "Chờ duyệt" },
+    { code: "AVAILABLE", label: "Đang hiển thị" },
+    { code: "EXPIRED", label: "Hết hạn" },
+    { code: "REJECTED", label: "Bị từ chối" },
+];
+
+
+
 
 export default function Listings() {
-    
-    const [properties, setProperties] = useState([
-        {
-            propertyId: 1,
-            user: { fullName: "Nguyễn Văn A" },
-            propertyType: "Căn hộ",
-            propertyTypeTransaction: "Bán",
-            propertyDescription: "Căn hộ view sông, 75m², nội thất đầy đủ.",
-            propertyStatus: "Chờ duyệt",
-            address: { fullAddress: "159 Xa lộ Hà Nội, TP.HCM" },
-            propertyPrice: "3.2 tỷ",
-            squareMeters: 75,
-            bedrooms: 2,
-            bathrooms: 2,
-            propertyLegal: "Sổ đỏ",
-            propertyInterior: "Cơ bản",
-            isAvailable: false,
-        },
-        {
-            propertyId: 2,
-            user: { fullName: "Trần Thị B" },
-            propertyType: "Nhà phố",
-            propertyTypeTransaction: "Cho thuê",
-            propertyDescription: "Nhà phố Quận 7, diện tích 120m².",
-            propertyStatus: "Đã duyệt",
-            address: { fullAddress: "Quận 7, TP.HCM" },
-            propertyPrice: "25 triệu/tháng",
-            squareMeters: 120,
-            bedrooms: 3,
-            bathrooms: 3,
-            propertyLegal: "Hợp đồng thuê",
-            propertyInterior: "Đầy đủ",
-            isAvailable: true,
-        },
-    ]);
-
+    const [properties, setProperties] = useState({ content: [] });
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
     const [expanded, setExpanded] = useState(null);
-    const [notification, setNotification] = useState("Thao tác thành công!");
 
-    useEffect(() => {
-        if (notification) {
-            const timer = setTimeout(() => setNotification(null), 3000);
-            return () => clearTimeout(timer);
+    const [selectedStatus, setSelectedStatus] = useState("ALL");
+
+    const fetchAdminListings = async () => {
+        try {
+            setLoading(true);
+
+            const statusParam = selectedStatus === "ALL" ? null : selectedStatus;
+
+            const response = await listingService.getUserListingByAdmin(statusParam, page, 10);
+
+            setProperties(response.data || { content: [] });
+            setTotalPages(response.data?.totalPages || 0);
+
+        } catch (error) {
+            console.error("Lỗi tải danh sách:", error);
+            toast.error("Không thể tải danh sách bài đăng");
+        } finally {
+            setLoading(false);
         }
-    }, [notification]);
+    };
+
+    // Hàm gọi khi tab status thay đổi
+    const handleStatusChange = (newStatus) => {
+        setSelectedStatus(newStatus);
+        setPage(0); // Reset page về 0 khi đổi trạng thái lọc
+    };
+
+    // useEffect chạy lại khi page HOẶC selectedStatus thay đổi
+    useEffect(() => {
+        // Cập nhật lại logic fetch để gọi hàm mới
+        fetchAdminListings();
+    }, [page, selectedStatus]);
+
+
+    const handleActionPost = async (id, approved) => {
+        // Có thể thêm Confirm Modal ở đây trước khi gọi API
+        try {
+            setLoading(true);
+            if (approved === true) {
+                await listingService.approveListing(id, { approved: true });
+                toast.success("Duyệt bài thành công");
+            } else {
+                // Giả sử cần thêm logic lấy rejectReason từ Modal
+                await listingService.approveListing(id, { approved: false, rejectReason: "Nội dung không phù hợp" });
+                toast.success("Từ chối bài thành công");
+            }
+
+            // Fetch lại data sau khi hành động
+            await fetchAdminListings();
+
+        } catch (error) {
+            console.error("Lỗi thực hiện thao tác:", error);
+            toast.error("Không thể thực hiện thao tác do lỗi hệ thống");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const posts = properties.content || [];
 
     return (
         <main className="flex-1 p-6">
-            {/* Notification */}
-            {notification && (
-                <div className="fixed top-5 right-5 bg-green-100 text-green-700 border border-green-700 px-4 py-2 rounded shadow">
-                    {notification}
-                </div>
-            )}
+            <div className="bg-white shadow-xl rounded-xl p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Quản lý bài đăng</h2>
 
-            {/* Nếu không có bài đăng */}
-            {properties.length === 0 ? (
-                <div className="flex justify-center items-center h-96 bg-white rounded shadow">
-                    <div className="flex flex-col items-center">
-                        <img
-                            src="https://img.icons8.com/ios/100/000000/document--v1.png"
-                            alt="empty"
-                            className="mb-4"
-                        />
-                        <p className="text-gray-600 text-lg">Không có bài đăng nào</p>
-                    </div>
-                </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    {/* Header row */}
-                    <div className="grid grid-cols-10 bg-white shadow p-4 font-bold">
-                        <div>ID</div>
-                        <div className="col-span-2 text-center">Người đăng</div>
-                        <div className="text-center">Phân loại</div>
-                        <div className="text-center">Hình thức GD</div>
-                        <div className="col-span-2 text-center">Mô tả</div>
-                        <div className="text-center">Trạng thái</div>
-                        <div className="col-span-2 text-center">Action</div>
-                    </div>
-
-                    {properties.map((p) => (
-                        <div key={p.propertyId} className="bg-white shadow mt-2">
-                            <div className="grid grid-cols-10 items-center p-4">
-                                <div>{p.propertyId}</div>
-                                <div className="col-span-2 text-center">{p.user.fullName}</div>
-                                <div className="text-center">{p.propertyType}</div>
-                                <div className="text-center">{p.propertyTypeTransaction}</div>
-                                <div className="col-span-2 truncate">{p.propertyDescription}</div>
-                                <div className="text-center">{p.propertyStatus}</div>
-                                <div className="col-span-2 flex justify-end gap-2">
-                                    {p.propertyStatus === "Chờ duyệt" && (
-                                        <>
-                                            <button className="px-2 py-1 border-2 border-blue-500 text-blue-500 rounded hover:bg-blue-500 hover:text-white">
-                                                Duyệt
-                                            </button>
-                                            <button className="px-2 py-1 border-2 border-yellow-500 text-yellow-500 rounded hover:bg-yellow-500 hover:text-white">
-                                                Từ chối
-                                            </button>
-                                        </>
-                                    )}
-                                    <button className="px-2 py-1 border-2 border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white">
-                                        Xóa
-                                    </button>
-                                </div>
-                                <div className="col-span-10 flex justify-center mt-2">
-                                    <button
-                                        onClick={() =>
-                                            setExpanded(expanded === p.propertyId ? null : p.propertyId)
-                                        }
-                                        className="bg-gray-200 px-4 py-1 rounded-full hover:bg-gray-300"
-                                    >
-                                        {expanded === p.propertyId ? "Ẩn chi tiết ▲" : "Xem chi tiết ▼"}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {expanded === p.propertyId && (
-                                <div className="p-4 bg-gray-50">
-                                    <div className="grid grid-cols-7 gap-2">
-                                        <div className="col-span-2">{p.address.fullAddress}</div>
-                                        <div className="text-red-500">{p.propertyPrice}</div>
-                                        <div>{p.squareMeters} m²</div>
-                                        <div>{p.bedrooms} PN</div>
-                                        <div>{p.bathrooms} PT</div>
-                                        <div>{p.propertyLegal}</div>
-                                        <div>{p.propertyInterior}</div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                {/* Tab Status Bar */}
+                <div className="flex flex-wrap gap-2 mb-6 border-b pb-3">
+                    {ADMIN_STATUS_TABS.map((tab) => (
+                        <button
+                            key={tab.code}
+                            onClick={() => handleStatusChange(tab.code)}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200
+                                ${selectedStatus === tab.code
+                                    ? "bg-blue-600 text-white shadow-md"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                        >
+                            {tab.label}
+                        </button>
                     ))}
                 </div>
-            )}
+
+
+                {loading ? (
+                    <div className="p-10 text-center text-gray-500">
+                        <svg className="animate-spin h-5 w-5 mr-3 inline text-blue-500" viewBox="0 0 24 24"></svg>
+                        Đang tải dữ liệu...
+                    </div>
+                ) : posts.length === 0 ? (
+                    <div className="flex justify-center items-center h-96 bg-white rounded shadow">
+                        <div className="flex flex-col items-center">
+                            <svg className="w-12 h-12 mb-4 opacity-50 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
+                            <p className="text-gray-600 text-lg">
+                                Không có bài đăng nào ở trạng thái "{ADMIN_STATUS_TABS.find(t => t.code === selectedStatus)?.label}"
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto rounded-xl shadow-lg border border-gray-100">
+
+                        {/* Header - Bảng điều khiển */}
+                        <div className="grid grid-cols-12 bg-gray-50 text-gray-600 uppercase text-xs font-semibold tracking-wider border-b">
+                            <div className="col-span-1 p-4">ID</div>
+                            <div className="col-span-2 p-4">Người đăng</div>
+                            <div className="col-span-2 p-4">Phân loại / Giá</div>
+                            <div className="col-span-3 p-4">Tiêu đề (Mô tả)</div>
+                            <div className="col-span-2 p-4 text-center">Trạng thái</div>
+                            <div className="col-span-2 p-4 text-center">Hành động</div>
+                        </div>
+
+
+                        {posts.map((p) => (
+                            <div key={p.id} className="border-b last:border-b-0 hover:bg-blue-50 transition-colors duration-150">
+
+                                <div className="grid grid-cols-12 items-center text-sm p-4">
+
+                                    <div className="col-span-1 font-mono text-gray-500">#{p.id}</div>
+
+                                    <div className="col-span-2 font-medium text-gray-800 truncate" title={p.realtorName}>
+                                        {p.realtorName || 'N/A'}
+                                        <div className="text-xs text-gray-500 truncate">{p.email}</div>
+                                    </div>
+
+                                    <div className="col-span-2 text-gray-700">
+                                        <span className="font-semibold">{p.propertyType}</span>
+                                        <div className={`font-semibold ${p.propertyTransactionType === "SALE" ? "text-red-500" : "text-green-500"} text-sm`}>
+                                            {formatCurrency(p.price)}
+                                        </div>
+                                    </div>
+
+                                    <div className="col-span-3 text-gray-600 truncate" title={p.title}>
+                                        {p.title}
+                                    </div>
+
+                                    <div className="col-span-2 flex justify-center">
+                                        {getStatusLabel(p.status)}
+                                    </div>
+
+                                    <div className="col-span-2 flex justify-center gap-2">
+                                        {p.status === "PENDING_APPROVAL" && (
+                                            <>
+                                                <button onClick={() => handleActionPost(p.id, true)} className="text-xs font-semibold px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                                                    Duyệt
+                                                </button>
+                                                <button onClick={() => handleActionPost(p.id, false)} className="text-xs font-semibold px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                                                    Từ chối
+                                                </button>
+                                            </>
+                                        )}
+                                        {/* Nút Xem chi tiết (Chung) */}
+                                        <button
+                                            onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+                                            className="text-xs font-semibold px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                                        >
+                                            Xem
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Chi tiết mở rộng (Expandable Details) */}
+                                {expanded === p.id && (
+                                    <div className="p-4 bg-gray-50 border-t border-gray-200">
+                                        <h4 className="text-sm font-bold text-gray-700 mb-2">Thông tin chi tiết:</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-600">
+                                            <div className="col-span-full">
+                                                <span className="font-semibold">Địa chỉ:</span> {p.address}
+                                            </div>
+                                            <div className="font-medium">
+                                                <span className="font-semibold">Diện tích:</span> {p.area} m²
+                                            </div>
+                                            <div className="font-medium">
+                                                <span className="font-semibold">Tầng:</span> {p.floorNumber}
+                                            </div>
+                                            <div className="font-medium">
+                                                <span className="font-semibold">Phòng:</span> {p.bedrooms} PN / {p.bathrooms} PT
+                                            </div>
+                                            <div className="font-medium">
+                                                <span className="font-semibold">Pháp lý:</span> {p.legalPapers}
+                                            </div>
+                                            <div className="col-span-full mt-2">
+                                                <span className="font-semibold block mb-1">Mô tả:</span>
+                                                <p className="text-gray-700 italic border-l-2 pl-3 border-blue-500">{p.description}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+
+                        {/* Pagination Control */}
+                        {totalPages > 1 && (
+                            <div className="p-4 bg-white border-t border-gray-200 flex items-center justify-end gap-2">
+                                <span className="text-sm text-gray-600 mr-4">
+                                    Trang {page + 1} / {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setPage((curr) => Math.max(0, curr - 1))}
+                                    disabled={page === 0}
+                                    className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition"
+                                >
+                                    Trước
+                                </button>
+                                <button
+                                    onClick={() => setPage((curr) => Math.min(totalPages - 1, curr + 1))}
+                                    disabled={page >= totalPages - 1}
+                                    className="px-3 py-1 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm transition"
+                                >
+                                    Sau
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </main>
     );
 }

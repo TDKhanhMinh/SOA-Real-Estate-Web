@@ -73,6 +73,8 @@ export default function MapAutoComplete({ onSelect }) {
     setSuggestions([]);
 
     if (onSelect) {
+      console.log("location selected", data);
+
       onSelect(data);
     }
   };
@@ -103,7 +105,7 @@ export default function MapAutoComplete({ onSelect }) {
       </div>
 
       {isShowMap && (
-        <div className="flex items-center mt-4 w-full h-[300px]">
+        <div className="flex items-center mt-4 w-full h-[300px] z-10">
           <MapContainer
             center={[viewport.lat, viewport.lng]}
             zoom={viewport.zoom}

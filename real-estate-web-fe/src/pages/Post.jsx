@@ -1,41 +1,45 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { FaKey, FaTag } from "react-icons/fa";
 import Button from "../components/Button";
 import MapAutoComplete from "../components/MapAutoComplete";
+import { toast } from "react-toastify";
+import { uploadService } from './../services/uploadService';
+import ConfirmModal from "../components/ConfirmModal";
+import { useNavigate } from "react-router-dom";
+import { listingService } from "../services/listingService ";
 
 export default function Post() {
     const [form, setForm] = useState({
-        city: "",
-        district: "",
-        ward: "",
-        addressDetail: "",
-        propertyType: "",
-        area: "",
+        title: "",
         price: "",
-        paper: "",
-        interior: "",
-        floors: "",
+        address: "",
+        longitude: "",
+        latitude: "",
+        amenities: "",
+        propertyTransactionType: "",
+        legalPapers: "",
+        description: "",
+        floorNumber: "",
         bedrooms: "",
         bathrooms: "",
-        contactName: "",
-        contactPhone: "",
-        contactEmail: "",
-        titleDescription: "",
-        description: "",
-        images: [],
-
+        area: "",
+        imageUrls: [],
+        name: "",
+        phone: "",
+        email: ""
     });
-
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [previewImages, setPreviewImages] = useState([]);
-    const [isSelected, setIsSelected] = useState("")
-    const [location, setLocation] = useState(null);
+    const [selectedFiles, setSelectedFiles] = useState([]);
+    const [isSelected, setIsSelected] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
 
         if (type === "file") {
             const fileArray = Array.from(files);
-            setForm((prev) => ({ ...prev, [name]: fileArray }));
+            setSelectedFiles(fileArray);
 
             const previewArray = fileArray.map((file) =>
                 URL.createObjectURL(file)
@@ -47,52 +51,100 @@ export default function Post() {
     };
 
     const handleRemoveImage = (index) => {
-        const newImages = [...form.images];
-        newImages.splice(index, 1);
-
+        const newSelectedFiles = [...selectedFiles];
+        newSelectedFiles.splice(index, 1);
+        setSelectedFiles(newSelectedFiles);
         const newPreviews = [...previewImages];
+        URL.revokeObjectURL(newPreviews[index]);
         newPreviews.splice(index, 1);
-
-        setForm((prev) => ({ ...prev, images: newImages, city: location }));
         setPreviewImages(newPreviews);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Form data:", form);
-        alert("Đã gửi dữ liệu, xem console!");
-    };
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
+        if (form.title.length < 10) {
+            toast.error("Tiêu đề phải dài hơn 10 ký tự");
+            return;
+        }
+        if (isLoading) return;
+        setIsLoading(true)
+        try {
+            let imageUrls = [];
+            if (selectedFiles.length > 0) {
+                const formData = new FormData();
+                selectedFiles.forEach((file) => {
+                    formData.append("files", file);
+                });
 
+                const uploadResponse = await uploadService.uploadListImages(formData);
+                imageUrls = uploadResponse.data;
+            }
+            const finalPayload = {
+                ...form,
+                price: Number(form.price),
+                area: Number(form.area),
+                floorNumber: Number(form.floorNumber),
+                bedrooms: Number(form.bedrooms),
+                bathrooms: Number(form.bathrooms),
+                longitude: Number(form.longitude),
+                latitude: Number(form.latitude),
+                propertyTransactionType: isSelected,
+                imageUrls: imageUrls
+            };
+
+            console.log("Payload:", finalPayload);
+            await listingService.createListing(finalPayload);
+            toast.success("Thêm bài đăng thành công");
+            navigate('/account/drafts');
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || "Có lỗi xảy ra";
+
+            const msgMap = {
+                "TITLE_INVALID": "Tiêu đề quá ngắn (tối thiểu 10 ký tự)",
+                "PHONE_INVALID": "Số điện thoại không hợp lệ",
+                "EMAIL_INVALID": "Email không hợp lệ"
+            };
+
+            toast.error(msgMap[errorMsg] || errorMsg);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     return (
         <div className="max-w-5xl mx-auto p-6 mt-20">
             <div className="flex justify-between items-center mb-3">
                 <h2 className="text-2xl font-bold text-start mb-6">
                     Tạo bài đăng
                 </h2>
-                <Button className="border rounded-3xl hover:bg-gray-400" to={"/"}>Thoát</Button>
+                <Button className="border rounded-3xl hover:bg-gray-400" onClick={() => setIsModalOpen(true)}>Thoát</Button>
             </div>
 
             <section className="border rounded-3xl p-6 shadow-sm mb-8">
                 <h3 className="text-xl font-semibold mb-4">Nhu cầu</h3>
                 <div className="grid grid-cols-2 space-x-4">
-                    <div className={`border h-20 rounded-xl flex items-center hover:bg-gray-300 ${isSelected === "sell" ? "border-gray-900 bg-gray-200" : ""}`} onClick={() => (setIsSelected("sell"))} >
+                    <div className={`border h-20 rounded-xl flex items-center hover:bg-gray-300 ${isSelected === "SALE" ? "border-gray-900 bg-gray-200" : ""}`} onClick={() => (setIsSelected("SALE"))} >
                         <FaTag className="ml-4" />
                         <span className="mx-2">Bán</span>
                     </div>
-                    <div className={`border h-20 rounded-xl flex items-center hover:bg-gray-300 ${isSelected === "rent" ? "border-gray-900 bg-gray-200" : ""}`} onClick={() => (setIsSelected("rent"))}>
+                    <div className={`border h-20 rounded-xl flex items-center hover:bg-gray-300 ${isSelected === "RENT" ? "border-gray-900 bg-gray-200" : ""}`} onClick={() => (setIsSelected("RENT"))}>
                         <FaKey className="ml-4" />
                         <span className="mx-2">Cho thuê</span>
                     </div>
                 </div>
             </section>
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/*  Địa chỉ */}
                 <section className="border rounded-3xl p-6 shadow-sm">
                     <h3 className="text-xl font-semibold mb-4"> Địa chỉ bất động sản</h3>
-                    <MapAutoComplete onSelect={(data) => setLocation(data)} />
+                    <MapAutoComplete onSelect={(data) => {
+                        setForm(pre => ({
+                            ...pre,
+                            address: data.description,
+                            longitude: data.longitude,
+                            latitude: data.latitude
+                        }));
+                    }} />
                 </section>
 
-                {/*  Thông tin BĐS */}
                 <section className="border rounded-3xl p-6 shadow-sm">
                     <h3 className="text-xl font-semibold mb-4">Thông tin bất động sản</h3>
                     <div className="space-y-3">
@@ -138,8 +190,8 @@ export default function Post() {
                         </div>
 
                         <select
-                            name="paper"
-                            value={form.paper}
+                            name="legalPapers"
+                            value={form.legalPapers}
                             onChange={handleChange}
                             className="border p-2 rounded-3xl w-full"
                         >
@@ -150,8 +202,8 @@ export default function Post() {
                         </select>
 
                         <select
-                            name="interior"
-                            value={form.interior}
+                            name="amenities"
+                            value={form.amenities}
                             onChange={handleChange}
                             className="border p-2 rounded-3xl w-full"
                         >
@@ -164,8 +216,8 @@ export default function Post() {
                         <div className="grid grid-cols-3 gap-2">
                             <input
                                 type="number"
-                                name="floors"
-                                value={form.floors}
+                                name="floorNumber"
+                                value={form.floorNumber}
                                 onChange={handleChange}
                                 placeholder="Số tầng"
                                 className="border p-2 rounded-md rounded-3xl"
@@ -194,34 +246,33 @@ export default function Post() {
                 <section className="border rounded-3xl p-6 shadow-sm">
                     <h3 className="text-xl font-semibold mb-4">Liên hệ</h3>
                     <div className="space-y-3">
+
                         <input
                             type="text"
-                            name="contactName"
-                            value={form.contactName}
+                            name="name"
+                            value={form.name}
                             onChange={handleChange}
-                            placeholder="Họ và tên"
+                            placeholder="Tên liên hệ"
                             className="border p-2 rounded-3xl w-full"
                             required
                         />
                         <input
-                            type="tel"
-                            name="contactPhone"
-                            value={form.contactPhone}
+                            type="text"
+                            name="phone"
+                            value={form.phone}
                             onChange={handleChange}
                             placeholder="Số điện thoại"
                             className="border p-2 rounded-3xl w-full"
                             required
-                        />
-                        <input
+                        /><input
                             type="email"
-                            name="contactEmail"
-                            value={form.contactEmail}
+                            name="email"
+                            value={form.email}
                             onChange={handleChange}
                             placeholder="Email"
                             className="border p-2 rounded-3xl w-full"
                             required
                         />
-
                     </div>
                 </section>
 
@@ -232,8 +283,8 @@ export default function Post() {
 
                         <input
                             type="text"
-                            name="titleDescription"
-                            value={form.titleDescription}
+                            name="title"
+                            value={form.title}
                             onChange={handleChange}
                             placeholder="Mô tả ngắn gọn về loại hình bất động sản"
                             className="border p-2 rounded-3xl w-full"
@@ -250,11 +301,9 @@ export default function Post() {
                         ></textarea>
                     </div>
                 </section>
-                {/*  Upload ảnh */}
                 <section className="border rounded-3xl p-6 shadow-sm">
                     <h3 className="text-xl font-semibold mb-4">Hình ảnh bất động sản</h3>
 
-                    {/* Upload zone */}
                     <label
                         htmlFor="images"
                         className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition"
@@ -287,7 +336,6 @@ export default function Post() {
                         />
                     </label>
 
-                    {/* Preview */}
                     {previewImages.length > 0 && (
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                             {previewImages.map((src, i) => (
@@ -300,7 +348,6 @@ export default function Post() {
                                         alt={`preview-${i}`}
                                         className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
-                                    {/* nút xoá */}
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveImage(i)}
@@ -314,16 +361,38 @@ export default function Post() {
                     )}
                 </section>
 
-                {/* Đăng tin */}
                 <div className="text-right">
                     <button
                         type="submit"
-                        className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+                        disabled={isLoading}
+                        className={`px-6 py-3 rounded-full text-white font-medium transition-all flex items-center justify-center ml-auto 
+            ${isLoading
+                                ? "bg-blue-400 cursor-not-allowed opacity-70"
+                                : "bg-blue-600 hover:bg-blue-700"
+                            }`}
                     >
-                        Đăng tin ngay
+                        {isLoading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Đang xử lý...
+                            </>
+                        ) : (
+                            "Đăng tin ngay"
+                        )}
                     </button>
                 </div>
             </form>
+            <ConfirmModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handleSubmit}
+                title="Xác nhận thoát"
+                message="Nếu bạn thoát thì bài đăng của bạn sẽ lưu ở bản nháp?"
+            />
         </div>
+
     );
 }

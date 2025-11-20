@@ -52,7 +52,7 @@ export default function Profile() {
                 const dataUpdate = {
                     name: user.name,
                     phone: user.phone,
-                    avatarUrl: updatedUserImage
+                    avatarUrl: updatedUserImage.data
                 }
                 await userService.updateProfile(dataUpdate);
                 await fetchProfile();

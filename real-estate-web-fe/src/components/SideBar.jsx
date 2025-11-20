@@ -23,8 +23,7 @@ const menuSections = [
         icon: <HiOutlineClipboardList className="w-5 h-5" />,
         links: [
             { name: "Đăng mới", to: "/post", icon: <HiOutlinePlusCircle className="w-5 h-5" /> },
-            { name: "Tin đã đăng", to: "/account/listing", icon: <HiOutlineClipboardCheck className="w-5 h-5" /> },
-            { name: "Tin nháp", to: "/account/drafts", icon: <HiOutlineDocumentText className="w-5 h-5" /> },
+            { name: "Tin của bạn", to: "/account/listing", icon: <HiOutlineClipboardCheck className="w-5 h-5" /> },
         ]
     },
     {
