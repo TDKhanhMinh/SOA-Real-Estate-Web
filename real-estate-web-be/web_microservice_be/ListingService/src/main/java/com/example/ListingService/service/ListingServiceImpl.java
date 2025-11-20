@@ -381,7 +381,7 @@ public class ListingServiceImpl implements ListingService{
             template = "PROPERTY_APPROVED_EMAIL";
             subject = "Your property listing has been approved!";
             emailProps.put("status", "Đang hiển thị");
-            emailProps.put("expiresAt", property.getExpiresAt());
+            emailProps.put("expiresAt", property.getExpiresAt().toString());
             emailProps.put("expiryDays", expiryDays);
             emailProps.put("priority", property.getPriority());
 
@@ -403,7 +403,7 @@ public class ListingServiceImpl implements ListingService{
         try{
             emailProps.put("propertyId", savedProperty.getId());
             emailProps.put("propertyTitle", savedProperty.getTitle());
-            emailProps.put("updatedAt", savedProperty.getUpdatedAt());
+            emailProps.put("updatedAt", savedProperty.getUpdatedAt().toString());
             emailProps.put("realtorName", savedProperty.getRealtorName());
             emailProps.put("realtorEmail", savedProperty.getRealtorEmail());
             emailProps.put("realtorPhone", savedProperty.getRealtorPhone());
