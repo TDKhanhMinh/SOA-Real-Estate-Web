@@ -493,13 +493,15 @@ public class ListingServiceImpl implements ListingService{
                 .and(hasStatus(Property.Status.AVAILABLE)); // Chỉ lấy bài đang hiện
 
         // Lọc theo loại giao dịch (Bán/Thuê)
-        if (transactionType != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("propertyTransactionType"), transactionType.toUpperCase()));
+        if (StringUtils.hasText(transactionType)) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("propertyTransactionType"), transactionType.toUpperCase()));
         }
 
         // Lọc theo loại BĐS (Nhà/Đất...)
-        if (propertyType != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("propertyType"), propertyType));
+        if (StringUtils.hasText(propertyType)) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("propertyType"), propertyType));
         }
 
         // Lọc theo khoảng giá (Optional nhưng rất cần thiết)
