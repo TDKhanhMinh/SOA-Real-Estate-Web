@@ -17,7 +17,6 @@ export const UserActionsModal = ({ isOpen, userId, onClose }) => {
     };
 
     return (
-        // Lớp phủ (Overlay)
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"
             onClick={handleOverlayClick}
