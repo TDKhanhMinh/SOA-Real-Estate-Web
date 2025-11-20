@@ -269,6 +269,25 @@ public class ListingController {
     // ======================================================
 
     /**
+     * Admin xem danh sách tất cả bài đăng với bộ lọc
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/properties")
+    public ResponseEntity<ApiResponse<Page<PropertyResponse>>> getAllListingsForAdmin(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Property.Status status,
+            @RequestParam(defaultValue = "false") boolean includeDeleted,
+            @PageableDefault(page = 0, size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        // Gọi Service với userId = null (để lấy tất cả)
+        Page<PropertyResponse> page = listingService.getUserListingsByAdmin(
+                null, search, status, includeDeleted, pageable);
+
+        return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(),
+                "Lấy danh sách toàn bộ bài đăng thành công", page));
+    }
+
+    /**
      * Admin xem danh sách bài CHỜ DUYỆT (Pending)
      */
     @PreAuthorize("hasRole('ADMIN')")
