@@ -87,6 +87,12 @@ public class Property {
     @Column(name = "realtor_email")
     private String realtorEmail;
 
+    @Column(name = "realtor_phone")
+    private String realtorPhone;
+
+    @Column(name = "realtor_name")
+    private String realtorName;
+
     public enum Status {
         PENDING_APPROVAL,
         AVAILABLE,

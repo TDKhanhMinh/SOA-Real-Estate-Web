@@ -57,4 +57,11 @@ public class UpdatePropertyRequest {
     @Email(message = "EMAIL_INVALID")
     @Size(max = 100, message = "EMAIL_TOO_LONG")
     private String email;
+
+    @Size(min = 10, max = 10, message = "PHONE_INVALID")
+    @Pattern(regexp = "^(\\+84|0)(3|5|7|8|9)[0-9]{8}$", message = "PHONE_INVALID")
+    private String phone;
+
+    @Size(min = 3, message = "NAME_INVALID")
+    private String name;
 }

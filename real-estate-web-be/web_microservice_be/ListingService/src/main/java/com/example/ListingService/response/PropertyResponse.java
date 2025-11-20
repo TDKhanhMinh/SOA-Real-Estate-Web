@@ -37,6 +37,8 @@ public class PropertyResponse {
 
     private Long realtorId;
     private String realtorEmail;
+    private String realtorName;
+    private String realtorPhone;
 
     private List<String> imageUrls;
 }

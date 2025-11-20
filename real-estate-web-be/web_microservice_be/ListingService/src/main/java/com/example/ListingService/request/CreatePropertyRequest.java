@@ -6,15 +6,12 @@ import java.util.List;
 
 @Data
 public class CreatePropertyRequest {
-    @NotBlank(message = "TITLE_REQUIRED")
     @Size(min = 10, max = 200, message = "TITLE_INVALID")
     private String title;
 
-    @NotNull(message = "PRICE_REQUIRED")
     @Positive(message = "PRICE_INVALID")
     private Double price;
 
-    @NotBlank(message = "ADDRESS_REQUIRED")
     @Size(max = 500, message = "ADDRESS_TOO_LONG")
     private String address;
 
@@ -28,10 +25,8 @@ public class CreatePropertyRequest {
 
     private String amenities;
 
-    @NotBlank(message = "PROPERTY_TRANSACTION_TYPE_REQUIRED")
     private String propertyTransactionType; // SALE, RENT
 
-    @NotBlank(message = "PROPERTY_TYPE_REQUIRED")
     private String propertyType; // APARTMENT, HOUSE...
 
     private String legalPapers;
@@ -48,7 +43,6 @@ public class CreatePropertyRequest {
     @Min(value = 0, message = "BATHROOMS_INVALID")
     private Integer bathrooms;
 
-    @NotNull(message = "AREA_REQUIRED")
     @Positive(message = "AREA_INVALID")
     private Double area;
 
@@ -57,4 +51,11 @@ public class CreatePropertyRequest {
     @Email(message = "EMAIL_INVALID")
     @Size(max = 100, message = "EMAIL_TOO_LONG")
     private String email;
+
+    @Size(min = 10, max = 10, message = "PHONE_INVALID")
+    @Pattern(regexp = "^(\\+84|0)(3|5|7|8|9)[0-9]{8}$", message = "PHONE_INVALID")
+    private String phone;
+
+    @Size(min = 3, message = "NAME_INVALID")
+    private String name;
 }

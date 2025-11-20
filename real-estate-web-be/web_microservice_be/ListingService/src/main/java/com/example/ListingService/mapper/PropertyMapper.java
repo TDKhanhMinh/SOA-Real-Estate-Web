@@ -51,6 +51,8 @@ public class PropertyMapper {
                 .rejectReason(property.getRejectReason())
                 .realtorId(property.getRealtorId())
                 .realtorEmail(property.getRealtorEmail())
+                .realtorName(property.getRealtorName())
+                .realtorPhone(property.getRealtorPhone())
                 .imageUrls(imageUrls) // Gán danh sách ảnh đã lấy
                 .build();
     }

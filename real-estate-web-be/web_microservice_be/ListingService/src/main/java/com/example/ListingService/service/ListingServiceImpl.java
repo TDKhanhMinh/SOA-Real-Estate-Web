@@ -55,6 +55,8 @@ public class ListingServiceImpl implements ListingService{
         Property property = Property.builder()
                 .realtorId(userId)
                 .realtorEmail(request.getEmail())
+                .realtorName(request.getName())
+                .realtorPhone(request.getPhone())
                 .title(request.getTitle())
                 .price(request.getPrice())
                 .address(request.getAddress())
@@ -110,6 +112,8 @@ public class ListingServiceImpl implements ListingService{
                 .rejectReason(savedProperty.getRejectReason())
                 .realtorId(savedProperty.getRealtorId())
                 .realtorEmail(savedProperty.getRealtorEmail())
+                .realtorName(savedProperty.getRealtorName())
+                .realtorPhone(savedProperty.getRealtorPhone())
                 .imageUrls(request.getImageUrls())
                 .build();
     }
@@ -180,6 +184,8 @@ public class ListingServiceImpl implements ListingService{
         if (request.getBathrooms() != null) property.setBathrooms(request.getBathrooms());
         if (request.getArea() != null) property.setArea(request.getArea());
         if (request.getEmail() != null) property.setRealtorEmail(request.getEmail());
+        if (request.getPhone() != null) property.setRealtorPhone(request.getPhone());
+        if (request.getName() != null) property.setRealtorName(request.getName());
 
         // Update ảnh (Xóa cũ thêm mới)
         if (request.getImageUrls() != null) {
