@@ -29,9 +29,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(headerAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated()
                         .requestMatchers(HttpMethod.GET, "/listing/public").permitAll()
                         .requestMatchers(HttpMethod.GET, "/listing/public/**").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .build();
     }

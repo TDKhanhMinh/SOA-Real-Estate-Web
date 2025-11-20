@@ -3,6 +3,7 @@ package com.example.ListingService.repository;
 import com.example.ListingService.model.PropertyImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Optional;
 
 public interface PropertyImageRepository extends JpaRepository<PropertyImage, Long> {
     /**
@@ -14,4 +15,9 @@ public interface PropertyImageRepository extends JpaRepository<PropertyImage, Lo
      * Xóa tất cả ảnh của một bài đăng (Dùng khi cập nhật ảnh mới đè lên ảnh cũ)
      */
     void deleteByPropertyId(Long propertyId);
+
+    /**
+     * Lây ảnh đại diện của bài đăng
+     */
+    Optional<PropertyImage> findFirstByPropertyId(Long propertyId);
 }

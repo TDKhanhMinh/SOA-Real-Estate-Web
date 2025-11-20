@@ -1,5 +1,6 @@
 package com.example.ListingService.service;
 
+import com.example.ListingService.dto.EmailNotificationDTO;
 import com.example.ListingService.dto.UserSubscriptionDetailsDTO;
 import com.example.ListingService.exception.AppException;
 import com.example.ListingService.exception.ErrorCode;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import com.example.ListingService.model.PropertyImage;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +36,9 @@ import reactor.util.retry.Retry;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -47,6 +51,12 @@ public class ListingServiceImpl implements ListingService{
     private final ObjectMapper jacksonObjectMapper;
     private final RabbitTemplate rabbitTemplate;
     private final PropertyMapper propertyMapper;
+
+    @Value("${rabbitmq.exchange.name}")
+    private String exchangeName;
+
+    @Value("${rabbitmq.routing-key.property-validated}")
+    private String propertyValidatedRoutingKey;
 
     @Override
     @Transactional
@@ -352,6 +362,10 @@ public class ListingServiceImpl implements ListingService{
             throw new AppException(ErrorCode.INVALID_ACTION, "Bài đăng không ở trạng thái chờ duyệt.");
         }
 
+        String template = "";
+        String subject = "";
+        Map<String, Object> emailProps = new HashMap<>();
+
         if (request.isApproved()) {
             property.setStatus(Property.Status.AVAILABLE);
             // Gọi lại Subscription để lấy postExpiryDays
@@ -363,14 +377,61 @@ public class ListingServiceImpl implements ListingService{
             property.setRejectReason(null); // Xóa lý do từ chối nếu có
 
             log.info("Admin duyệt bài {}. Hết hạn: {}", propertyId, property.getExpiresAt());
+
+            template = "PROPERTY_APPROVED_EMAIL";
+            subject = "Your property listing has been approved!";
+            emailProps.put("status", "Đang hiển thị");
+            emailProps.put("expiresAt", property.getExpiresAt());
+            emailProps.put("expiryDays", expiryDays);
+            emailProps.put("priority", property.getPriority());
+
         } else {
             property.setStatus(Property.Status.REJECTED);
             property.setRejectReason(request.getRejectReason());
             log.info("Admin từ chối bài {}. Lý do: {}", propertyId, request.getRejectReason());
+
+            template = "PROPERTY_REJECTED_EMAIL";
+            subject = "Your property listing has been rejected";
+            emailProps.put("status", "Đã từ chối");
+            emailProps.put("rejectReason", request.getRejectReason());
         }
 
         property.setUpdatedAt(LocalDateTime.now());
-        propertyRepository.save(property);
+        Property savedProperty = propertyRepository.save(property);
+
+        // Gửi message qua RabbitMQ để gửi email
+        try{
+            emailProps.put("propertyId", savedProperty.getId());
+            emailProps.put("propertyTitle", savedProperty.getTitle());
+            emailProps.put("updatedAt", savedProperty.getUpdatedAt());
+            emailProps.put("realtorName", savedProperty.getRealtorName());
+            emailProps.put("realtorEmail", savedProperty.getRealtorEmail());
+            emailProps.put("realtorPhone", savedProperty.getRealtorPhone());
+
+            String imageUrl = propertyImageRepository.findFirstByPropertyId(savedProperty.getId())
+                    .map(PropertyImage::getImageUrl)
+                    .orElse("https://w7.pngwing.com/pngs/848/762/png-transparent-computer-icons-home-house-home-angle-building-rectangle-thumbnail.png");
+
+            emailProps.put("propertyImageURL", imageUrl);
+
+            EmailNotificationDTO emailNotificationDTO = new EmailNotificationDTO(
+                    savedProperty.getRealtorEmail(),
+                    subject,
+                    template,
+                    savedProperty.getRealtorId(),
+                    emailProps
+            );
+
+            rabbitTemplate.convertAndSend(
+                    exchangeName,
+                    propertyValidatedRoutingKey,
+                    emailNotificationDTO
+            );
+
+            log.info("Sent 'approved or rejected' message to RabbitMQ for user: {}", savedProperty.getRealtorEmail());
+        } catch (Exception e) {
+            log.error("Failed to send 'approved or rejected' message for user {}: {}", savedProperty.getRealtorEmail(), e.getMessage());
+        }
     }
 
     @Override
