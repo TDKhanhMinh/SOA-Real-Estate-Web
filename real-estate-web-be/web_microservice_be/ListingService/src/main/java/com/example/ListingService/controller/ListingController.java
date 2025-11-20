@@ -372,7 +372,7 @@ public class ListingController {
     /**
      * Public: Tìm kiếm bài đăng
      * Mặc định sắp xếp: Priority (ASC) -> UpdatedAt (DESC)
-     * VD: /listings/public?transactionType=SALE&search=Hà Nội&sort=priority,asc&sort=updatedAt,desc
+     * VD: /listing/public?transactionType=SALE&search=Hà Nội&sort=priority,asc&sort=updatedAt,desc
      */
     @GetMapping("/public")
     public ResponseEntity<ApiResponse<Page<PropertyResponse>>> getPublicListings(
