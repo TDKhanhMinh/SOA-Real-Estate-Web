@@ -189,6 +189,55 @@ public class EmailService {
     @RabbitListener(queues = "${rabbitmq.queue.property}")
     public void handlePropertyEmail(EmailNotificationDTO emailDto) {
         log.info("Nhận tác vụ email BẤT ĐỘNG SẢN: {}", emailDto.to());
-        // ... (Tương tự, tạo template cho tin đăng)
+
+        String body = "";
+        String subject = emailDto.subject();
+
+        // Lấy raw data từ message
+        Map<String, Object> raw_data = emailDto.data();
+
+        // format data cho template
+        Map<String, Object> formatted = new HashMap<>(raw_data);
+
+        // --- FORMAT DATE TIME ---
+        if (raw_data.get("updatedAt") != null) {
+            formatted.put("updatedAt",
+                    EmailFormatUtils.date(LocalDateTime.parse(raw_data.get("updatedAt").toString())));
+        }
+
+        // expiresAt chỉ tồn tại khi bài đăng được duyệt
+        if (raw_data.get("expiresAt") != null) {
+            formatted.put("expiresAt",
+                    EmailFormatUtils.date(LocalDateTime.parse(raw_data.get("expiresAt").toString())));
+        }
+
+        // --- CÁC TRƯỜNG CÒN LẠI KHÔNG CẦN FORMAT ---
+        // propertyId, propertyTitle, status, rejectReason, expiryDays, priority,
+        // realtorName, realtorEmail, realtorPhone, propertyImageURL → giữ nguyên.
+
+        // --- SET VÀO CONTEXT ---
+        Context context = new Context();
+        context.setVariable("data", formatted);
+        context.setVariable("to", emailDto.to());
+
+        switch (emailDto.template()) {
+            case "PROPERTY_APPROVED_EMAIL":
+                body = templateEngine.process("listing/property-approved", context);
+                break;
+
+            case "PROPERTY_REJECTED_EMAIL":
+                body = templateEngine.process("listing/property-rejected", context);
+                break;
+
+            default:
+                log.error("Không nhận dạng được template email BĐS: {}", emailDto.template());
+                return;
+        }
+
+        boolean sent = sendEmail(emailDto.to(), subject, body);
+
+        if (sent) {
+            saveEmailLog(emailDto, body);
+        }
     }
 }

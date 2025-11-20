@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bài đăng của bạn đã được duyệt</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #333;
+        }
+
+        .wrapper {
+            padding: 40px 0;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #28a745;
+            padding: 28px;
+            text-align: center;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 30px 40px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .property-image {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 18px 22px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            margin: 10px 0;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #444;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #111;
+        }
+
+        .footer {
+            text-align: center;
+            color: #777;
+            padding: 18px;
+            font-size: 13px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+
+        <div class="header">
+            <h1>Bài đăng của bạn đã được duyệt!</h1>
+        </div>
+
+        <div class="content">
+
+            <p>
+                Xin chào <strong th:text="${data.realtorName}">Realtor</strong>,
+                <br/>Bài đăng bất động sản của bạn đã được phê duyệt và đang hiển thị trên hệ thống.
+            </p>
+
+            <img th:src="${data.propertyImageURL}" alt="Property Image" class="property-image"/>
+
+            <div class="info-box">
+                <div class="info-item">
+                    <span class="label">Mã bài đăng:</span>
+                    <span class="value" th:text="${data.propertyId}">Mã bài đăng</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Tiêu đề:</span>
+                    <span class="value" th:text="${data.propertyTitle}">Tiêu đề</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Trạng thái:</span>
+                    <span class="value" th:text="${data.status}">Trạng thái</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Thời gian duyệt:</span>
+                    <span class="value" th:text="${data.updatedAt}">Thời gian duyệt</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Ngày hết hạn hiển thị:</span>
+                    <span class="value" th:text="${data.expiresAt}">Ngày hết hạn hiển thị</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Thời gian hiển thị:</span>
+                    <span class="value" th:text="${data.expiryDays} + ' ngày'">Thời gian hiển thị</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">Mức ưu tiên:</span>
+                    <span class="value" th:text="${data.priority}">Mức ưu tiên</span>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px;">
+                Nếu bạn cần chỉnh sửa hoặc cập nhật thông tin bài đăng, vui lòng đăng nhập vào tài khoản của bạn trên nền tảng của chúng tôi.
+            </p>
+
+            <p style="margin-top: 25px;">
+                Trân trọng,<br/>
+                <strong>Đội ngũ Quản lý Bất động sản</strong>
+            </p>
+        </div>
+
+        <div class="footer">
+            © 2025 Real Estate Platform. All rights reserved.
+        </div>
+    </div>
+</div>
+</body>
+</html>

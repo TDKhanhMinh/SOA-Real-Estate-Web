@@ -81,8 +81,6 @@ services:
       - rabbitmq
     networks:
       - microservice-network
-    ports:
-      - "8083:8083"
     restart: unless-stopped
 
   # Transaction Service
@@ -113,8 +111,6 @@ services:
       - rabbitmq
     networks:
       - microservice-network
-    ports:
-      - "8081:8081"
     restart: unless-stopped
 
   # Upload Service
