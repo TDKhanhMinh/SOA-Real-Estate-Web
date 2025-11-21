@@ -29,6 +29,24 @@ public class UserSubscription {
     @Column(name = "subscription_id")
     private Long subscriptionId;
 
+    @Column(name = "subscription_name")
+    private String subscriptionName;
+
+    @Column(name = "price")
+    private Double price;
+
+    @Column(name = "duration")
+    private Integer duration;
+
+    @Column(name = "max_post")
+    private Integer maxPost;
+
+    @Column(name = "priority")
+    private Integer priority;
+
+    @Column(name = "post_expiry_days")
+    private Integer postExpiryDays;
+
     @Column(name = "start_date")
     private LocalDateTime startDate;
 
