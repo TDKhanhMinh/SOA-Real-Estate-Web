@@ -7,7 +7,8 @@ import TextInput from "../../components/TextInput";
 import { UserActionsModal } from "../../components/UserActionModal";
 import { useDebounce } from "../../hooks/useDebounce";
 import { SubscriptionModal } from "../../components/SubscriptionModal";
-
+import { CiLock } from "react-icons/ci";
+import { CiUnlock } from "react-icons/ci";
 export default function Users() {
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -29,11 +30,55 @@ export default function Users() {
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+    const handleLock = async (user) => {
 
+        try {
+            const payload = {
+                name: user.name,
+                phone: user.phone,
+                isActive: false
+            }
+            const res = await userService.updateProfileByAdmin(user.id, payload);
+            console.log(res);
+            await fetchUsers();
+            toast.success("Khóa người dùng thành công")
+
+        } catch (error) {
+            console.log(
+                error
+            );
+
+        }
+
+    };
+    const handleOpenLock = async (user) => {
+
+        try {
+            const payload = {
+                name: user.name,
+                phone: user.phone,
+                isActive: true
+            }
+            const res = await userService.updateProfileByAdmin(user.id, payload);
+            console.log(res);
+            await fetchUsers();
+            toast.success("Mở khóa người dùng thành công")
+
+        } catch (error) {
+            console.log(
+                error
+            );
+
+        }
+
+    };
     const fetchUsers = useCallback(async () => {
         try {
             const response = await userService.findUserByEmailOrName(debouncedSearchTerm, page, 10);
-            setUsers(response.data || []);
+            const userFilter = response.data.filter(user => user.role !== "ADMIN");
+            console.log("User filter", userFilter);
+
+            setUsers(userFilter || []);
             setTotalPages(response.totalPages || 0);
         } catch (err) {
             console.error("Failed to fetch users", err);
@@ -252,12 +297,9 @@ export default function Users() {
                                     <div className="col-span-2">Full Name</div>
                                     <div className="col-span-2">Email</div>
                                     <div className="col-span-2">Phone</div>
-                                    <div>Balance</div>
                                     <div>Role</div>
                                     <div className="col-span-2 text-center">Action</div>
                                 </div>
-
-
                                 <div className="divide-y divide-gray-100">
                                     {users?.map((u) => (
                                         <div
@@ -275,24 +317,29 @@ export default function Users() {
                                             <div className="col-span-2 font-semibold text-gray-900">{u.name}</div>
                                             <div className="col-span-2 text-gray-500 truncate pr-4" title={u.email}>{u.email}</div>
                                             <div className="col-span-2">{u.phone}</div>
-                                            <div className="font-mono text-green-600 font-medium">
-                                                {u.accountBalance ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(u.accountBalance) : "0 ₫"}
-                                            </div>
+
                                             <div>
                                                 <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
                                                     {u.role}
                                                 </span>
                                             </div>
-                                            <div className="col-span-2 flex justify-center">
+                                            <div className="col-span-2 flex justify-between items-center w-full">
                                                 <SubscriptionModal userId={u.id} />
-                                                <Button
+                                                <button
                                                     onClick={() => handleOpenModal(u.id)}
-                                                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1"
+                                                    className="flex items-center justify-center text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1"
                                                 >
                                                     <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
-                                                </Button>
+                                                </button>
+                                                <button
+                                                    onClick={() => { u.isActive ? handleLock(u) : handleOpenLock(u) }}
+                                                    className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-1"
+                                                >
+                                                    {u.isActive ? <CiLock className="w-8 h-8 text-red-600" /> : <CiUnlock className="w-8 h-8 text-green-600" />}
+
+                                                </button>
                                             </div>
                                         </div>
                                     ))}

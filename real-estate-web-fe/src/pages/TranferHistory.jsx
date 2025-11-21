@@ -172,48 +172,53 @@ export default function TransferHistory() {
                 ) : (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">ID</th>
-                                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Ảnh</th>
-                                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">Tiêu đề</th>
-                                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Trạng thái</th>
-                                        <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Ngày cập nhật</th>
-                                        <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {posts.map((p) => (
-                                        <tr key={p.id} className="hover:bg-gray-50">
-                                            <td className="p-3 text-sm text-gray-500 font-mono">#{p.id}</td>
-                                            <td className="p-3">
-                                                <TableImage src={p.imageUrls?.[0]} />
-                                            </td>
-                                            <td className="p-3 max-w-xs truncate font-medium text-gray-800" title={p.title}>
-                                                {p.title}
-                                            </td>
-                                            <td className="p-3">
-                                                {getStatusLabel(p.status)}
-                                            </td>
-                                            <td className="p-3 text-sm text-gray-500">
-                                                {formatDateTime(p.updatedAt)}
-                                            </td>
-                                            <td className="p-3 text-center space-x-2 whitespace-nowrap">
-                                                <PropertyActionsDropdown
-                                                    p={p}
-                                                    handlePostListing={handlePostListing}
-                                                    handleSoldListing={handleSoldListing}
-                                                    handleRentedListing={handleRentedListing}
-                                                    handleEdit={handleEdit}
-                                                    handleHidden={handleHidden}
-                                                    handleSelectedDelete={handleSelectedDelete}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <div className="min-w-full">
+                                <div className="h-[550px] overflow-y-auto border rounded-lg">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">ID</th>
+                                                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Ảnh</th>
+                                                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-3/12">Tiêu đề</th>
+                                                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Trạng thái</th>
+                                                <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Ngày cập nhật</th>
+                                                <th className="p-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-2/12">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {posts.map((p) => (
+                                                <tr key={p.id} className="hover:bg-gray-50">
+                                                    <td className="p-3 text-sm text-gray-500 font-mono">#{p.id}</td>
+                                                    <td className="p-3">
+                                                        <TableImage src={p.imageUrls?.[0]} />
+                                                    </td>
+                                                    <td className="p-3 max-w-xs truncate font-medium text-gray-800" title={p.title}>
+                                                        {p.title}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        {getStatusLabel(p.status)}
+                                                    </td>
+                                                    <td className="p-3 text-sm text-gray-500">
+                                                        {formatDateTime(p.updatedAt)}
+                                                    </td>
+                                                    <td className="p-3 text-center space-x-2 whitespace-nowrap">
+                                                        <PropertyActionsDropdown
+                                                            p={p}
+                                                            handlePostListing={handlePostListing}
+                                                            handleSoldListing={handleSoldListing}
+                                                            handleRentedListing={handleRentedListing}
+                                                            handleEdit={handleEdit}
+                                                            handleHidden={handleHidden}
+                                                            handleSelectedDelete={handleSelectedDelete}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
 
 

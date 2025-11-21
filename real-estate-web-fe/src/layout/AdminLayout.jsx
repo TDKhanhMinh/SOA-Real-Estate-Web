@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import {
     FaBars,
     FaChartPie,
@@ -12,13 +12,20 @@ import Button from './../components/Button';
 import { MdPayment } from "react-icons/md";
 import { LuCrown } from "react-icons/lu";
 import { ToastContainer } from "react-toastify";
+import { useAuth } from "../hooks/useAuth";
 
 function AdminLayout() {
     const [open, setOpen] = useState(true);
+    const navigate = useNavigate()
+    const { logout } = useAuth();
 
+    const handlerLogout = async () => {
+        navigate("/");
+        console.log("User had been logout");
+        logout();
+    }
     return (
-        <div className="flex h-screen bg-gray-100">
-            {/* Sidebar */}
+        <div className="flex h-screen bg-gray-100">            
             <div className={`bg-gradient-to-b from-indigo-700 to-purple-800 hover:bg-white/20 text-white transition-all ${open ? "w-60" : "w-16"}`}>
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
                     <h1 className={`${open ? "block" : "hidden"} font-bold`}>Admin Dashboard</h1>
@@ -71,7 +78,7 @@ function AdminLayout() {
 
                     <li>
                         <Button
-                            to="/"
+                            onClick={handlerLogout}
                             className="px-4 py-2 flex items-center gap-2 hover:bg-gray-700"
                         >
                             <CiLogout /> {open && "Logout"}
@@ -79,15 +86,12 @@ function AdminLayout() {
                     </li>
                 </ul>
             </div>
-
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col">
-                {/* Header */}
+            
+            <div className="flex-1 flex flex-col">                
                 <div className="bg-sky-600 h-14 px-6 py-4 shadow-lg ">
-                    
-                </div>
 
-                {/* Nội dung page con */}
+                </div>
+                
                 <div className="flex-1 p-6 overflow-y-auto">
                     <ToastContainer
                         position="top-right"
@@ -97,7 +101,7 @@ function AdminLayout() {
                         closeOnClick
                         pauseOnHover
                         draggable
-                        theme="colored"      
+                        theme="colored"
                     />
                     <Outlet />
                 </div>

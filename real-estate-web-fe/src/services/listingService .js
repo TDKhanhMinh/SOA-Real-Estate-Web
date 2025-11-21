@@ -81,14 +81,13 @@ export const listingService = {
         return res.data;
     },
     // /admin/user/{userId}/properties
-    getUserAllUserListingByAdmin: async (userId, status, includeDeleted, page = 0, size = 10) => {
+    getUserAllUserListingByAdmin: async (userId, page = 0, size = 10) => {
         const params = {
-            status,
-            includeDeleted,
+            includeDeleted: true,
             page,
             size,
         };
-        const res = await http.get(`/listing/admin/user/$${userId}/properties`, { params });
+        const res = await http.get(`/listing/admin/user/${userId}/properties`, { params });
         return res.data;
     },
     // /admin/property/{id}

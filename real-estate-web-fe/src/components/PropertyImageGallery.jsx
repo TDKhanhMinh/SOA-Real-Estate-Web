@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 const PropertyImageGallery = ({ property }) => {
-    const [mainImage, setMainImage] = useState(property?.imageUrls?.[0]);
+    const [mainImage, setMainImage] = useState(null);
 
-    const imageUrls = property?.imageUrls || [];
+    const imageUrls = useMemo(() => property?.imageUrls || [], [property?.imageUrls]);
+
+    useEffect(() => {
+        if (imageUrls.length > 0 && !mainImage) {
+            setMainImage(imageUrls[0]);
+        }
+    }, [imageUrls, mainImage]);
+
 
     const handleThumbnailClick = (newImageUrl) => {
         setMainImage(newImageUrl);
@@ -16,7 +23,7 @@ const PropertyImageGallery = ({ property }) => {
     return (
         <div className="w-full">
             <img
-                src={mainImage} 
+                src={mainImage}
                 alt="Main Property Image"
                 className="w-full h-[350px] object-cover rounded-xl shadow-lg border-4 border-white transition-opacity duration-300"
             />
@@ -25,9 +32,8 @@ const PropertyImageGallery = ({ property }) => {
                     <button
                         key={i}
                         onClick={() => handleThumbnailClick(img)}
-                        className={`p-0.5 rounded-xl transition ${
-                            img === mainImage ? 'border-2 border-blue-500 shadow-md' : 'border-2 border-transparent'
-                        }`}
+                        className={`p-0.5 rounded-xl transition ${img === mainImage ? 'border-2 border-blue-500 shadow-md' : 'border-2 border-transparent'
+                            }`}
                     >
                         <img
                             src={img}

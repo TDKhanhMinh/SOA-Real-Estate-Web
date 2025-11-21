@@ -4,6 +4,7 @@ import { HistoryModal } from './HistoryModal';
 import { BalanceModal } from './BalanceModal';
 import { SubscriptionHistoryModal } from './SubscriptionHistoryModal';
 import { UserSubscriptionDetailsModal } from './UserSubscriptionDetailsModal';
+import { ListingHistoryModal } from './ListingHistoryModal';
 
 export const UserActionsModal = ({ isOpen, userId, onClose }) => {
 
@@ -45,6 +46,7 @@ export const UserActionsModal = ({ isOpen, userId, onClose }) => {
                     <BalanceModal userId={userId} />
                     <SubscriptionHistoryModal userId={userId} />
                     <UserSubscriptionDetailsModal userId={userId} />
+                    <ListingHistoryModal userId={userId} />
                 </div>
             </div>
         </div>

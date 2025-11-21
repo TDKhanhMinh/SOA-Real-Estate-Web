@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { formatCurrency } from "../utils/formatCurrency";
 import { PropertyListingCard } from "../components/PropertyListingCard";
 
 export default function SearchResult() {

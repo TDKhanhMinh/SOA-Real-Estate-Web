@@ -3,6 +3,7 @@ import { listingService } from "../../services/listingService ";
 import { toast } from "react-toastify";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { getStatusLabel } from "../../utils/statusMapping";
+import { formatDateTime } from './../../utils/formatDateTime';
 
 const ADMIN_STATUS_TABS = [
     { code: "ALL", label: "Tất cả" },
@@ -13,15 +14,21 @@ const ADMIN_STATUS_TABS = [
 ];
 
 
-
-
 export default function Listings() {
     const [properties, setProperties] = useState({ content: [] });
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [expanded, setExpanded] = useState(null);
+    const [lightboxImage, setLightboxImage] = useState(null);
 
+    const openLightbox = (url) => {
+        setLightboxImage(url);
+    };
+
+    const closeLightbox = () => {
+        setLightboxImage(null);
+    };
     const [selectedStatus, setSelectedStatus] = useState("ALL");
 
     const fetchAdminListings = async () => {
@@ -33,6 +40,8 @@ export default function Listings() {
             const response = await listingService.getUserListingByAdmin(statusParam, page, 10);
 
             setProperties(response.data || { content: [] });
+            console.log("return data", response.data);
+
             setTotalPages(response.data?.totalPages || 0);
 
         } catch (error) {
@@ -87,7 +96,7 @@ export default function Listings() {
             <div className="bg-white shadow-xl rounded-xl p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">Quản lý bài đăng</h2>
 
-                {/* Tab Status Bar */}
+
                 <div className="flex flex-wrap gap-2 mb-6 border-b pb-3">
                     {ADMIN_STATUS_TABS.map((tab) => (
                         <button
@@ -122,7 +131,7 @@ export default function Listings() {
                 ) : (
                     <div className="overflow-x-auto rounded-xl shadow-lg border border-gray-100">
 
-                        {/* Header - Bảng điều khiển */}
+
                         <div className="grid grid-cols-12 bg-gray-50 text-gray-600 uppercase text-xs font-semibold tracking-wider border-b">
                             <div className="col-span-1 p-4">ID</div>
                             <div className="col-span-2 p-4">Người đăng</div>
@@ -138,31 +147,41 @@ export default function Listings() {
 
                                 <div className="grid grid-cols-12 items-center text-sm p-4">
 
+
                                     <div className="col-span-1 font-mono text-gray-500">#{p.id}</div>
+
 
                                     <div className="col-span-2 font-medium text-gray-800 truncate" title={p.realtorName}>
                                         {p.realtorName || 'N/A'}
-                                        <div className="text-xs text-gray-500 truncate">{p.email}</div>
+
+                                        <div className="text-xs text-gray-500 truncate">{p.realtorEmail}</div>
                                     </div>
+
 
                                     <div className="col-span-2 text-gray-700">
                                         <span className="font-semibold">{p.propertyType}</span>
                                         <div className={`font-semibold ${p.propertyTransactionType === "SALE" ? "text-red-500" : "text-green-500"} text-sm`}>
+
                                             {formatCurrency(p.price)}
                                         </div>
                                     </div>
+
 
                                     <div className="col-span-3 text-gray-600 truncate" title={p.title}>
                                         {p.title}
                                     </div>
 
+
                                     <div className="col-span-2 flex justify-center">
+
                                         {getStatusLabel(p.status)}
                                     </div>
+
 
                                     <div className="col-span-2 flex justify-center gap-2">
                                         {p.status === "PENDING_APPROVAL" && (
                                             <>
+
                                                 <button onClick={() => handleActionPost(p.id, true)} className="text-xs font-semibold px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
                                                     Duyệt
                                                 </button>
@@ -171,7 +190,7 @@ export default function Listings() {
                                                 </button>
                                             </>
                                         )}
-                                        {/* Nút Xem chi tiết (Chung) */}
+
                                         <button
                                             onClick={() => setExpanded(expanded === p.id ? null : p.id)}
                                             className="text-xs font-semibold px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
@@ -181,7 +200,7 @@ export default function Listings() {
                                     </div>
                                 </div>
 
-                                {/* Chi tiết mở rộng (Expandable Details) */}
+
                                 {expanded === p.id && (
                                     <div className="p-4 bg-gray-50 border-t border-gray-200">
                                         <h4 className="text-sm font-bold text-gray-700 mb-2">Thông tin chi tiết:</h4>
@@ -189,6 +208,8 @@ export default function Listings() {
                                             <div className="col-span-full">
                                                 <span className="font-semibold">Địa chỉ:</span> {p.address}
                                             </div>
+
+
                                             <div className="font-medium">
                                                 <span className="font-semibold">Diện tích:</span> {p.area} m²
                                             </div>
@@ -201,9 +222,49 @@ export default function Listings() {
                                             <div className="font-medium">
                                                 <span className="font-semibold">Pháp lý:</span> {p.legalPapers}
                                             </div>
+
+
+                                            <div className="font-medium">
+                                                <span className="font-semibold">Cập nhật:</span> {p.updatedAt ? formatDateTime(p.updatedAt) : 'N/A'}
+                                            </div>
+                                            <div className="font-medium">
+                                                <span className="font-semibold">Hết hạn:</span> {p.expiresAt ? formatDateTime(p.expiresAt) : 'N/A'}
+                                            </div>
+                                            <div className="col-span-2 font-medium">
+                                                <span className="font-semibold">Tiện ích:</span> {p.amenities || 'Không có'}
+                                            </div>
+
+
+                                            {p.status === "REJECTED" && p.rejectReason && (
+                                                <div className="col-span-full mt-2">
+                                                    <span className="font-semibold block mb-1 text-red-600">Lý do từ chối:</span>
+                                                    <p className="text-red-500 italic border-l-2 pl-3 border-red-500">{p.rejectReason}</p>
+                                                </div>
+                                            )}
+
+
                                             <div className="col-span-full mt-2">
                                                 <span className="font-semibold block mb-1">Mô tả:</span>
                                                 <p className="text-gray-700 italic border-l-2 pl-3 border-blue-500">{p.description}</p>
+                                            </div>
+                                            <div className="col-span-1">
+                                                {p.imageUrls && p.imageUrls.length > 0 ? (
+                                                    <div className="flex space-x-1 overflow-x-auto p-1">
+                                                        {p.imageUrls.map((item, index) => (
+                                                            <img
+                                                                onClick={() => openLightbox(item)}
+                                                                key={index}
+                                                                src={item}
+                                                                alt={`Ảnh ${index}`}
+                                                                className="w-10 h-10 object-cover rounded-md shadow flex-shrink-0"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                                                        No Img
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -211,8 +272,30 @@ export default function Listings() {
                             </div>
                         ))}
 
+                        {lightboxImage && (
+                            <div
+                                onClick={closeLightbox}
+                                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-sm transition-opacity duration-300"
+                            >
+                                <div className="relative p-4 max-w-7xl max-h-[90vh]">
 
-                        {/* Pagination Control */}
+                                    <img
+                                        src={lightboxImage}
+                                        alt="Full screen view"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                                    />
+
+                                    <button
+                                        onClick={closeLightbox}
+                                        className="absolute top-2 right-2 md:top-4 md:right-4 text-white text-3xl font-bold p-2 bg-gray-900 bg-opacity-50 rounded-full hover:bg-opacity-80 transition"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {totalPages > 1 && (
                             <div className="p-4 bg-white border-t border-gray-200 flex items-center justify-end gap-2">
                                 <span className="text-sm text-gray-600 mr-4">

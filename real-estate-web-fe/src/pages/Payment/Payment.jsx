@@ -3,9 +3,9 @@ import { PromotionModal } from '../../components/payment/PromotionModal';
 import { PaymentContent } from '../../components/payment/PaymentContent';
 
 const mockUser = {
-    fullName: 'Nguyễn Trường Nam',
+    fullName: 'Trần Đỗ Khánh Minh',
     imageUrl: 'https://png.pngtree.com/png-vector/20190710/ourlarge/pngtree-user-vector-avatar-png-image_1541962.jpg',
-    accountBalance: 1250000,
+    accountBalance: 0,
     paymentCode: 'NAP123456',
     phone: '090xxxxxxx',
 };

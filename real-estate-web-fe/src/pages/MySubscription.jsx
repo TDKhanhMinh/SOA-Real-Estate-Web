@@ -24,6 +24,7 @@ import { formatCurrency } from '../utils/formatCurrency';
 import { formatDateTime } from './../utils/formatDateTime';
 import { X } from 'lucide-react';
 import { toast } from 'react-toastify';
+import ConfirmModal from './../components/ConfirmModal';
 
 const renderHistoryStatus = (status) => {
     let text = status;
@@ -61,6 +62,7 @@ export default function MySubscription() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [historyPage, setHistoryPage] = useState(null);
     const [historyLoading, setHistoryLoading] = useState(true);
@@ -72,7 +74,7 @@ export default function MySubscription() {
     const renderSubscriptionName = (id) => {
         const subs = plans.find(subs => subs.id === id);
         console.log("sub buy name", subs);
-        return subs?.name||"N/A";
+        return subs?.name || "N/A";
     }; useEffect(() => {
         fetchSubscriptions();
     }, []);
@@ -257,10 +259,11 @@ export default function MySubscription() {
                                     <p className="text-blue-100 text-lg">{details.description}</p>
                                 </div>
                                 {
-                                   
+
                                     <div>
-                                        <button onClick={handlerCancelSubscription} className="inline-flex items-center gap-2 bg-red-500  px-4 py-1.5 rounded-full text-sm font-semibold mb-3 hover:bg-red-700">
+                                        <button onClick={() => setIsModalOpen(true)} className="inline-flex items-center gap-2 bg-red-500  px-4 py-1.5 rounded-full text-sm font-semibold mb-3 hover:bg-red-700">
                                             <X className="text-base" />
+
                                             Hủy gói
                                         </button>
                                     </div>
@@ -544,6 +547,13 @@ export default function MySubscription() {
                 </div>
 
             </div>
+            <ConfirmModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={handlerCancelSubscription}
+                title="Xác nhận hủy gói hiện tại"
+                message="Ban có chắc chắc muốn hủy gói hay không"
+            />
         </div>
     );
 }

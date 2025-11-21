@@ -31,6 +31,10 @@ export const userService = {
         const res = await http.put("user/profile", data);
         return res.data.data;
     },
+    updateProfileByAdmin: async (id, data) => {
+        const res = await http.put(`user/${id}`, data);
+        return res.data;
+    },
     changePassword: async (data) => {
         const res = await http.put("user/change-password", data);
         return res.data.data;

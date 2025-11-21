@@ -11,12 +11,7 @@ export default function Payments() {
     const [activeTab, setActiveTab] = useState('transactions');
 
     const [notification, setNotification] = useState(null);
-    const [filters, setFilters] = useState({
-        search: '',
-        status: '',
-        startDate: '',
-        endDate: '',
-    });
+
     const [page, setPage] = useState(0);
     const [size] = useState(10);
 
@@ -40,10 +35,6 @@ export default function Payments() {
             page: page,
             size: size,
             sort: 'createdAt,desc',
-            search: filters.search || null,
-            status: filters.status || null,
-            startDate: filters.startDate || null,
-            endDate: filters.endDate || null,
         };
 
         try {
@@ -61,17 +52,13 @@ export default function Payments() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, size, filters]);
+    }, [page, size]);
 
     useEffect(() => {
         fetchTransactions();
     }, [fetchTransactions]);
 
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({ ...prev, [name]: value }));
-        setPage(0);
-    };
+    
 
     const currentPageData = activeTab === 'transactions' ? transactionsPage : subscriptionPage;
 
@@ -112,48 +99,7 @@ export default function Payments() {
                 </div>
             )}
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <SearchIcon />
-                        </div>
-                        <input
-                            type="text"
-                            name="search"
-                            placeholder="Tìm user, mã GD..."
-                            value={filters.search}
-                            onChange={handleFilterChange}
-                            className="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm transition-colors"
-                        />
-                    </div>
-
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <CalendarIcon />
-                        </div>
-                        <input
-                            type="date"
-                            name="startDate"
-                            value={filters.startDate}
-                            onChange={handleFilterChange}
-                            className="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm"
-                        />
-                    </div>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <CalendarIcon />
-                        </div>
-                        <input
-                            type="date"
-                            name="endDate"
-                            value={filters.endDate}
-                            onChange={handleFilterChange}
-                            className="pl-10 block w-full rounded-lg border-gray-300 bg-gray-50 border focus:ring-blue-500 focus:border-blue-500 p-2.5 text-sm"
-                        />
-                    </div>
-                </div>
-            </div>
+            
 
             <div className="flex space-x-1 bg-gray-200 p-1 rounded-lg w-fit mb-4">
                 <button

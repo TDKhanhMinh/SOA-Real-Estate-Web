@@ -14,7 +14,6 @@ const PropertyActionsDropdown = ({
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    // LOGIC CLICK OUTSIDE (Giữ nguyên)
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -34,7 +33,7 @@ const PropertyActionsDropdown = ({
 
     return (
         <div className="relative inline-block text-left" ref={dropdownRef}>
-            
+
             <div>
                 <button
                     type="button"
@@ -46,16 +45,16 @@ const PropertyActionsDropdown = ({
                     <FiMoreVertical className="w-4 h-4" />
                 </button>
             </div>
-            
+
             {isOpen && (
                 <div
                     className="absolute right-0 mt-2 w-48 origin-top-right bg-white border border-gray-200 rounded-lg shadow-xl z-20"
                     role="menu"
                     aria-orientation="vertical"
                     aria-labelledby="menu-button"
-                >                    
+                >
                     <div className="p-1 flex flex-col space-y-1">
-                        
+
                         {p.status === "DRAFT" && (
                             <button
                                 onClick={(e) => {
@@ -63,14 +62,13 @@ const PropertyActionsDropdown = ({
                                     handlePostListing(p.id);
                                     setIsOpen(false);
                                 }}
-                                // Thêm w-full để nút chiếm toàn bộ chiều rộng
                                 className={`${actionButtonBaseClass} w-full text-green-700 hover:bg-green-50`}
                                 role="menuitem"
                             >
                                 Gửi duyệt
                             </button>
                         )}
-                        
+
                         {p.status === "AVAILABLE" && (
                             <button
                                 onClick={(e) => {
@@ -86,7 +84,7 @@ const PropertyActionsDropdown = ({
                                 {p.propertyTransactionType === "SALE" ? "Đã bán" : "Đã cho thuê"}
                             </button>
                         )}
-                        
+
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
@@ -98,19 +96,21 @@ const PropertyActionsDropdown = ({
                         >
                             Chỉnh sửa
                         </button>
-                        
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleHidden(p.id);
-                                setIsOpen(false);
-                            }}
-                            className={`${actionButtonBaseClass} w-full ${p.status === "HIDDEN" ? "text-yellow-700 hover:bg-yellow-50" : "text-gray-700 hover:bg-gray-50"}`}
-                            role="menuitem"
-                        >
-                            {p.status === "HIDDEN" ? "Hiển thị" : "Ẩn bài"}
-                        </button>
-                        
+
+                        {p.status === "SOLD" || p.status === "RENTED" &&
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleHidden(p.id);
+                                    setIsOpen(false);
+                                }}
+                                className={`${actionButtonBaseClass} w-full ${p.status === "HIDDEN" ? "text-yellow-700 hover:bg-yellow-50" : "text-gray-700 hover:bg-gray-50"}`}
+                                role="menuitem"
+                            >
+                                {p.status === "HIDDEN" ? "Hiển thị" : "Ẩn bài"}
+                            </button>
+                        }
+
                         <button
                             onClick={(e) => {
                                 e.preventDefault();

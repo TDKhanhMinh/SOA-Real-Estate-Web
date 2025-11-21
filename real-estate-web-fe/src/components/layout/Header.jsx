@@ -7,8 +7,6 @@ import { getToken, getUser } from "../../utils/auth";
 import { useEffect, useState } from "react";
 
 const navItems = [
-  { to: "/sale/all-sale", title: "Nhà đất bán" },
-  { to: "/rental/all-rental", title: "Nhà đất cho thuê" },
   { href: "https://vnexpress.net/bat-dong-san", title: "Tin tức" },
   { href: "", title: "Dự án" },
   { href: "", title: "Tin tức" },
