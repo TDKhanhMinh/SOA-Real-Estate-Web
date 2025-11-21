@@ -81,6 +81,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     protected boolean createBasicSubscription(Long userId, String email) {
         try {
+            Subscription basicSubscription = subscriptionRepository.findById(1L)
+                    .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+
             Optional<UserSubscription> existingUserSubscription = userSubscriptionRepository.findByUserId(userId);
 
             // Nếu chưa có subscription, tạo mới gói basic
@@ -90,8 +93,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                         .userId(userId)
                         .email(email)
                         .subscriptionId(1L) // Gói basic có ID là 1
+                        .subscriptionName(basicSubscription.getName())
+                        .price(basicSubscription.getPrice())
+                        .duration(basicSubscription.getDuration())
+                        .maxPost(basicSubscription.getMaxPost())
+                        .priority(basicSubscription.getPriority())
+                        .postExpiryDays(basicSubscription.getPostExpiryDays())
                         .startDate(LocalDateTime.now())
-                        .endDate(LocalDateTime.now().plusYears(1000)) // Giả sử gói basic không hết hạn
+                        .endDate(LocalDateTime.now().plusDays(basicSubscription.getDuration())) // Giả sử gói basic không hết hạn
                         .status(UserSubscription.Status.ACTIVE)
                         .build();
                 userSubscriptionRepository.save(newUserSubscription);
@@ -112,8 +121,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
             // Cập nhật subscription hiện tại sang gói basic
             existingUserSubscription.get().setSubscriptionId(1L);
+            existingUserSubscription.get().setSubscriptionName(basicSubscription.getName());
+            existingUserSubscription.get().setPrice(basicSubscription.getPrice());
+            existingUserSubscription.get().setDuration(basicSubscription.getDuration());
+            existingUserSubscription.get().setMaxPost(basicSubscription.getMaxPost());
+            existingUserSubscription.get().setPriority(basicSubscription.getPriority());
+            existingUserSubscription.get().setPostExpiryDays(basicSubscription.getPostExpiryDays());
             existingUserSubscription.get().setStartDate(LocalDateTime.now());
-            existingUserSubscription.get().setEndDate(LocalDateTime.now().plusYears(1000));
+            existingUserSubscription.get().setEndDate(LocalDateTime.now().plusDays(basicSubscription.getDuration()));
             existingUserSubscription.get().setStatus(UserSubscription.Status.ACTIVE);
             userSubscriptionRepository.save(existingUserSubscription.get());
             log.info("Đã cập nhật sang basic subscription cho user {}", userId);
@@ -236,7 +251,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             log.warn("User {} cố gắng mua gói {} trong khi đang ở gói {}. Từ chối.",
                     userId, subscriptionId, currentUserSub.getSubscriptionId());
 
-            // Bạn cần tự định nghĩa ErrorCode này
             throw new AppException(ErrorCode.CANNOT_PURCHASE_DIFFERENT_PLAN);
         }
 
@@ -247,6 +261,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .subscriptionId(subscriptionId)
                 .subscriptionName(subToPurchase.getName())
                 .amount(subToPurchase.getPrice())
+                .duration(subToPurchase.getDuration())
+                .maxPost(subToPurchase.getMaxPost())
+                .priority(subToPurchase.getPriority())
+                .postExpiryDays(subToPurchase.getPostExpiryDays())
                 .status(SubscriptionOrder.Status.PENDING)
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -448,6 +466,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // Case stacking (gia hạn)
         if (userSub.getSubscriptionId().equals(subscriptionId)) {
             log.info("User {} đang ở gói {}, thực hiện stacking (gia hạn).", userId, subscriptionId);
+
+            userSub.setSubscriptionName(targetSubscription.getName());
+            userSub.setPrice(targetSubscription.getPrice());
+            userSub.setDuration(targetSubscription.getDuration());
+            userSub.setMaxPost(targetSubscription.getMaxPost());
+            userSub.setPriority(targetSubscription.getPriority());
+            userSub.setPostExpiryDays(targetSubscription.getPostExpiryDays());
+
             LocalDateTime currentEndDate = userSub.getEndDate();
             LocalDateTime baseDate = (currentEndDate != null && currentEndDate.isAfter(LocalDateTime.now()))
                     ? currentEndDate
@@ -464,6 +490,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // Cập nhật thông tin gói cho user
         userSub.setSubscriptionId(targetSubscription.getId());
+        userSub.setSubscriptionName(targetSubscription.getName());
+        userSub.setPrice(targetSubscription.getPrice());
+        userSub.setDuration(targetSubscription.getDuration());
+        userSub.setMaxPost(targetSubscription.getMaxPost());
+        userSub.setPriority(targetSubscription.getPriority());
+        userSub.setPostExpiryDays(targetSubscription.getPostExpiryDays());
         userSub.setStatus(UserSubscription.Status.ACTIVE);
 
         LocalDateTime now = LocalDateTime.now();
@@ -514,11 +546,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         order.setStatus(SubscriptionOrder.Status.COMPLETED);
 
         // Xác định xem đây là nâng cấp từ Basic hay là Stacking
-        // (Chúng ta giả định hàm purchaseSubscription đã chặn các trường hợp khác)
         boolean isUpgradingFromBasic = userSub.getSubscriptionId().equals(1L);
 
         // 1. Cập nhật thông tin gói (ID, Status)
         userSub.setSubscriptionId(purchasedSub.getId());
+        userSub.setSubscriptionName(purchasedSub.getName());
+        userSub.setPrice(purchasedSub.getPrice());
+        userSub.setDuration(purchasedSub.getDuration());
+        userSub.setMaxPost(purchasedSub.getMaxPost());
+        userSub.setPriority(purchasedSub.getPriority());
+        userSub.setPostExpiryDays(purchasedSub.getPostExpiryDays());
         userSub.setStatus(UserSubscription.Status.ACTIVE);
 
         // 2. Xử lý logic ngày tháng theo yêu cầu của bạn
@@ -563,10 +600,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             emailProps.put("subscriptionId", savedTransaction.getSubscriptionId());
             emailProps.put("subscriptionName", savedTransaction.getSubscriptionName());
             emailProps.put("price", purchasedSub.getPrice());
-            emailProps.put("duration", purchasedSub.getDuration());
-            emailProps.put("maxPost", purchasedSub.getMaxPost());
-            emailProps.put("priority", purchasedSub.getPriority());
-            emailProps.put("postExpiryDays", purchasedSub.getPostExpiryDays());
+            emailProps.put("duration", savedTransaction.getDuration());
+            emailProps.put("maxPost", savedTransaction.getMaxPost());
+            emailProps.put("priority", savedTransaction.getPriority());
+            emailProps.put("postExpiryDays", savedTransaction.getPostExpiryDays());
             emailProps.put("startDate", savedUserSubscription.getStartDate().toString());
             emailProps.put("endDate", savedUserSubscription.getEndDate().toString());
 
@@ -608,6 +645,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         // 1. Lấy danh sách ứng viên hết hạn
         List<UserSubscription> expiredCandidates = userSubscriptionRepository.findExpiredSubscriptions(now);
 
+        Subscription basicSubscription = subscriptionRepository.findById(1L)
+                .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
+
         if (expiredCandidates.isEmpty()) {
             return;
         }
@@ -621,7 +661,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             try {
                 // Gọi hàm riêng biệt có Transactional cho từng user
                 // Để lock chỉ giữ trong tích tắc khi xử lý 1 người, xong là nhả ra ngay
-                downgradeSingleUser(candidate.getUserId(), now);
+                downgradeSingleUser(candidate.getUserId(), now, basicSubscription);
                 successCount++;
             } catch (Exception e) {
                 log.error("Lỗi khi hạ cấp gói cho User {}: {}", candidate.getUserId(), e.getMessage());
@@ -632,7 +672,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     // Tách ra hàm riêng để Transaction và Lock chỉ phạm vi nhỏ này
     @Transactional
-    public void downgradeSingleUser(Long userId, LocalDateTime now) {
+    public void downgradeSingleUser(Long userId, LocalDateTime now, Subscription basicSubscription) {
         // 1. Tìm lại và KHÓA dòng dữ liệu này (Pessimistic Write)
         UserSubscription sub = userSubscriptionRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -646,11 +686,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         // 3. Thực hiện hạ cấp
         Long oldSubId = sub.getSubscriptionId();
+        String oldSubName = sub.getSubscriptionName();
+
         sub.setSubscriptionId(1L);
+        sub.setSubscriptionName(basicSubscription.getName());
+        sub.setPrice(basicSubscription.getPrice());
+        sub.setDuration(basicSubscription.getDuration());
+        sub.setMaxPost(basicSubscription.getMaxPost());
+        sub.setPriority(basicSubscription.getPriority());
+        sub.setPostExpiryDays(basicSubscription.getPostExpiryDays());
         sub.setStartDate(now);
-        sub.setEndDate(now.plusYears(100));
+        sub.setEndDate(now.plusDays(basicSubscription.getDuration()));
 
         userSubscriptionRepository.save(sub);
-        log.info("Đã chuyển User {} từ gói {} về Basic.", sub.getUserId(), oldSubId);
+        log.info("Đã chuyển User {} từ gói id: {}, name: {} về Basic.", sub.getUserId(), oldSubId, oldSubName);
     }
 }

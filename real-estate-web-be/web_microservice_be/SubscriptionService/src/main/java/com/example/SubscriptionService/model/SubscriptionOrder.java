@@ -36,6 +36,18 @@ public class SubscriptionOrder {
     @Column(name = "amount")
     private Double amount;
 
+    @Column(name = "duration")
+    private Integer duration;
+
+    @Column(name = "max_post")
+    private Integer maxPost;
+
+    @Column(name = "priority")
+    private Integer priority;
+
+    @Column(name = "post_expiry_days")
+    private Integer postExpiryDays;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private Status status;
