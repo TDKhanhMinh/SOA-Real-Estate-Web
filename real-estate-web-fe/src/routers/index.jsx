@@ -28,6 +28,7 @@ import Payment from "../pages/Payment/Payment";
 import MomoPayment from "../pages/Payment/MomoPayment";
 import VnPayPayment from "../pages/Payment/VnPayPayment";
 import PaymentHistory from "../pages/Payment/PaymentHistory";
+import TransferHistory from "../pages/TranferHistory";
 
 
 const publicRoutes = createBrowserRouter([
@@ -74,6 +75,9 @@ const publicRoutes = createBrowserRouter([
             },
             {
                 path: 'payment', element: <Payment />
+            },
+            {
+                path: 'history', element: <TransferHistory />
             },
             {
                 path: 'payment-history', element: <PaymentHistory />

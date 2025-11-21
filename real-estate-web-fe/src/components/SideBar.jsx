@@ -6,6 +6,7 @@ import {
     HiOutlineUserCircle, HiOutlineCog, HiOutlineCash, HiOutlineLockClosed,
     HiOutlineShoppingBag, HiOutlineBookOpen, HiOutlineTicket, HiOutlineCollection
 } from "react-icons/hi";
+import { TbTransfer } from "react-icons/tb";
 import { transactionService } from "../services/transactionService";
 import { userService } from "../services/userService";
 
@@ -31,6 +32,7 @@ const menuSections = [
         icon: <HiOutlineUserCircle className="w-5 h-5" />,
         links: [
             { name: "Lịch sử nạp tiền", to: "/account/payment-history", icon: <HiOutlineCash className="w-5 h-5" /> },
+            { name: "Lịch sử mua bán", to: "/account/history", icon: <TbTransfer className="w-5 h-5" /> },
             { name: "Chỉnh sửa thông tin", to: "/account/profile", icon: <HiOutlineCog className="w-5 h-5" /> },
             { name: "Đổi mật khẩu", to: "/account/change-password", icon: <HiOutlineLockClosed className="w-5 h-5" /> },
         ]
@@ -132,7 +134,7 @@ export default function Sidebar() {
                     >
                         <h6 className="font-semibold text-sm">Mã chuyển khoản</h6>
                         <div className="flex items-center justify-center gap-2">
-                            <p className="text-sm text-blue-600 font-bold">{user?.paymentCode||"N/A"}</p>
+                            <p className="text-sm text-blue-600 font-bold">{user?.paymentCode || "N/A"}</p>
                             {isCopied ? (
                                 <HiCheckCircle className="w-4 h-4 text-green-500" />
                             ) : (

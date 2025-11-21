@@ -1,209 +1,224 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import Button from "./Button";
+import { useState } from "react";
+import Button from "./Button"; // Giả định component Button đã tồn tại
 import { useNavigate } from "react-router-dom";
+import { FaSearch } from "react-icons/fa";
+import { listingService } from "../services/listingService ";
 
-const host = "https://provinces.open-api.vn/api/";
+// Thêm các icons để tăng tính trực quan cho bộ lọc
+import { FaHome, FaMoneyBillWave, FaListAlt } from "react-icons/fa";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 
 export default function SearchForm() {
     const [isOpen, setIsOpen] = useState(false);
     const navigate = useNavigate();
-    const [cities, setCities] = useState([]);
-    const [districts, setDistricts] = useState([]);
-    const [wards, setWards] = useState([]);
 
     const [form, setForm] = useState({
-        searchKey: "",
-        optionType: "sell",
-        city: "",
-        district: "",
-        ward: "",
-        houseType: "",
-        rangePrice: "",
-        sqmtRange: "",
+        search: "", // Đổi null thành chuỗi rỗng để tránh warning
+        transactionType: null,
+        propertyType: null,
+        minPrice: null,
+        maxPrice: null,
+        priceRange: "" // Đổi null thành chuỗi rỗng
     });
 
-    useEffect(() => {
-        axios.get(`${host}?depth=1`).then((res) => {
-            setCities(res.data);
-        });
-    }, []);
-
-    useEffect(() => {
-        if (form.city) {
-            axios.get(`${host}p/${form.city}?depth=2`).then((res) => {
-                setDistricts(res.data.districts || []);
-                setWards([]);
-                setForm((prev) => ({ ...prev, district: "", ward: "" }));
-            });
-        }
-    }, [form.city]);
-
-    useEffect(() => {
-        if (form.district) {
-            axios.get(`${host}d/${form.district}?depth=2`).then((res) => {
-                setWards(res.data.wards || []);
-                setForm((prev) => ({ ...prev, ward: "" }));
-            });
-        }
-    }, [form.district]);
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        let newForm = { ...form, [name]: value };
+
+        if (name === "priceRange") {
+            if (value) {
+                // Xử lý giá trị "max" đặc biệt
+                const [min, max] = value.split('-');
+                newForm.minPrice = min === "0" ? null : min;
+                newForm.maxPrice = max === "max" ? null : max;
+            } else {
+                newForm.minPrice = "";
+                newForm.maxPrice = "";
+            }
+        }
+        setForm(newForm);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Dữ liệu form:", form);
-        // TODO: call API search 
-        navigate("/search-result", { state: { ...form } });
+        const { priceRange, ...finalForm } = form;
+
+        const filteredForm = Object.fromEntries(
+            Object.entries(finalForm).filter(([_, value]) => value !== null && value !== "")
+        );
+
+        const queryParams = new URLSearchParams(filteredForm).toString();
+
+        try {
+            const result = await listingService.getAllListing(
+                form.search,
+                form.transactionType,
+                form.propertyType,
+                form.minPrice,
+                form.maxPrice
+            );
+            navigate(`/search-result?${queryParams}`, { state: result.data });
+        } catch (error) {
+            console.error("Lỗi tìm kiếm:", error);
+        }
     };
+
+    // Định nghĩa các loại nhà đất (Sử dụng đối tượng để dễ bảo trì)
+    const propertyTypes = [
+        { value: "", label: "Loại nhà đất (Tất cả)" },
+        { value: "1", label: "Tất cả nhà đất" },
+        { value: "2", label: "Căn hộ chung cư" },
+        { value: "3", label: "Nhà riêng" },
+        { value: "4", label: "Đất nền" },
+        { value: "5", label: "Biệt thự, liền kề" },
+    ];
+
+    // Định nghĩa các mức giá (Thêm "max" để dễ xử lý)
+    const priceRanges = [
+        { value: "", label: "Mức giá (Tất cả)" },
+        { value: "0-500000000", label: "Dưới 500 triệu" },
+        { value: "500000000-1000000000", label: "500 triệu - 1 tỷ" },
+        { value: "1000000000-2000000000", label: "1 tỷ - 2 tỷ" },
+        { value: "2000000000-5000000000", label: "2 tỷ - 5 tỷ" },
+        { value: "5000000000-10000000000", label: "5 tỷ - 10 tỷ" },
+        { value: "10000000000-max", label: "Trên 10 tỷ" }, // Thay thế số lớn bằng 'max'
+    ];
+
 
     return (
-        <div className="max-w-5xl mx-auto mt-6">
-            <div className="bg-gray-300 rounded-lg p-4">
-                <form onSubmit={handleSubmit} className="flex gap-2">
-                    <input
-                        type="text"
-                        name="searchKey"
-                        value={form.searchKey}
-                        onChange={handleChange}
-                        placeholder="Tìm kiếm trên toàn quốc"
-                        className="flex-1 px-4 py-2 rounded-lg border outline-none"
-                    />
-                    <Button type="submit" className="px-4 py-2 bg-white hover:bg-gray-200 text-white rounded-lg">
-                        🔍
-                    </Button>
+        <div className="max-w-5xl mx-auto -mt-16 relative z-10"> {/* Điều chỉnh vị trí */}
+            {/* Thẻ bao ngoài: Đổi màu nền và thêm hiệu ứng đổ bóng */}
+            <div className="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100">
+
+                {/* 1. THANH TÌM KIẾM CHÍNH */}
+                <form onSubmit={handleSubmit} className="flex gap-3 items-center">
+
+                    {/* Ô nhập liệu */}
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            name="search"
+                            value={form.search}
+                            onChange={handleChange}
+                            placeholder="Nhập vị trí, khu vực, dự án hoặc từ khóa..."
+                            // Tăng kích thước và làm tròn góc
+                            className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 outline-none transition"
+                        />
+                        <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    </div>
+
+                    {/* Nút Tìm kiếm ngay (Ẩn nút cũ) */}
+                    <button
+                        type="submit"
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition duration-200 flex items-center gap-2"
+                    >
+                        <FaSearch />
+                        Tìm kiếm
+                    </button>
                 </form>
 
-                <Button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="w-full mt-3 bg-blue-600 text-white py-2 rounded-lg"
-                >
-                    {isOpen ? "Ẩn tìm kiếm chi tiết" : "Tìm kiếm chi tiết"}
-                </Button>
-
-                {isOpen && (
-                    <form
-                        onSubmit={handleSubmit}
-                        className="bg-white rounded-lg shadow p-4 mt-4 space-y-4"
+                {/* 2. NÚT MỞ RỘNG (Gắn liền với form) */}
+                <div className="text-center mt-4">
+                    <button
+                        type="button" // Đảm bảo không submit form
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition duration-200 flex items-center mx-auto"
                     >
-                        <div className="flex gap-4">
-                            <label className="px-4 py-2 border rounded-lg cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="optionType"
-                                    value="sell"
-                                    checked={form.optionType === "sell"}
-                                    onChange={handleChange}
-                                    className="mr-2"
-                                />
-                                Nhà đất bán
-                            </label>
-                            <label className="px-4 py-2 border rounded-lg cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="optionType"
-                                    value="rent"
-                                    checked={form.optionType === "rent"}
-                                    onChange={handleChange}
-                                    className="mr-2"
-                                />
-                                Nhà đất cho thuê
-                            </label>
+                        {isOpen ? (
+                            <>
+                                Ẩn tìm kiếm chi tiết <IoIosArrowUp className="ml-1" />
+                            </>
+                        ) : (
+                            <>
+                                Tìm kiếm chi tiết <IoIosArrowDown className="ml-1" />
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* 3. KHU VỰC TÌM KIẾM CHI TIẾT */}
+                {isOpen && (
+                    <div className="pt-4 mt-4 border-t border-gray-100">
+                        <h5 className="font-bold text-gray-700 mb-3">Bộ lọc nâng cao</h5>
+
+                        <div className="space-y-4">
+
+                            {/* Hàng 1: Loại Giao dịch (Sử dụng Button-like radio) */}
+                            <div className="flex gap-4">
+                                <label className={`flex-1 flex justify-center items-center py-3 rounded-lg cursor-pointer transition duration-150 border-2 ${form.transactionType === "SALE" ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold' : 'border-gray-300 bg-white hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="transactionType"
+                                        value="SALE"
+                                        checked={form.transactionType === "SALE"}
+                                        onChange={handleChange}
+                                        className="hidden" // Ẩn radio mặc định
+                                    />
+                                    <FaMoneyBillWave className="mr-2" /> Nhà đất Bán
+                                </label>
+                                <label className={`flex-1 flex justify-center items-center py-3 rounded-lg cursor-pointer transition duration-150 border-2 ${form.transactionType === "RENT" ? 'border-blue-600 bg-blue-50 text-blue-700 font-bold' : 'border-gray-300 bg-white hover:bg-gray-50'}`}>
+                                    <input
+                                        type="radio"
+                                        name="transactionType"
+                                        value="RENT"
+                                        checked={form.transactionType === "RENT"}
+                                        onChange={handleChange}
+                                        className="hidden" // Ẩn radio mặc định
+                                    />
+                                    <FaHome className="mr-2" /> Nhà đất Cho thuê
+                                </label>
+                            </div>
+
+                            {/* Hàng 2: Loại Bất động sản và Mức giá */}
+                            <div className="flex gap-4">
+                                {/* Chọn Loại nhà đất */}
+                                <div className="flex-1 relative">
+                                    <FaListAlt className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    <select
+                                        name="propertyType"
+                                        value={form.propertyType || ""}
+                                        onChange={handleChange}
+                                        className="w-full border-2 border-gray-200 px-4 pl-12 py-3 rounded-xl focus:border-blue-500 outline-none appearance-none bg-white transition"
+                                    >
+                                        {propertyTypes.map(type => (
+                                            <option key={type.value} value={type.value}>
+                                                {type.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Chọn Mức giá */}
+                                <div className="flex-1 relative">
+                                    <FaMoneyBillWave className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                    <select
+                                        name="priceRange"
+                                        value={form.priceRange}
+                                        onChange={handleChange}
+                                        className="w-full border-2 border-gray-200 px-4 pl-12 py-3 rounded-xl focus:border-blue-500 outline-none appearance-none bg-white transition"
+                                    >
+                                        {priceRanges.map(range => (
+                                            <option key={range.value} value={range.value}>
+                                                {range.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* City/District/Ward */}
-                        <div className="flex gap-2">
-                            <select
-                                name="city"
-                                value={form.city}
-                                onChange={handleChange}
-                                className="flex-1 border px-2 py-2 rounded-lg"
-                            >
-                                <option value="">Tỉnh/Thành phố</option>
-                                {cities.map((c) => (
-                                    <option key={c.code} value={c.code}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                name="district"
-                                value={form.district}
-                                onChange={handleChange}
-                                className="flex-1 border px-2 py-2 rounded-lg"
-                                disabled={!districts.length}
-                            >
-                                <option value="">Quận/Huyện</option>
-                                {districts.map((d) => (
-                                    <option key={d.code} value={d.code}>
-                                        {d.name}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <select
-                                name="ward"
-                                value={form.ward}
-                                onChange={handleChange}
-                                className="flex-1 border px-2 py-2 rounded-lg"
-                                disabled={!wards.length}
-                            >
-                                <option value="">Phường/Xã</option>
-                                {wards.map((w) => (
-                                    <option key={w.code} value={w.code}>
-                                        {w.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        {/* Other selects */}
-                        <div className="flex gap-2">
-                            <select
-                                name="houseType"
-                                value={form.houseType}
-                                onChange={handleChange}
-                                className="flex-1 border px-2 py-2 rounded-lg"
-                            >
-                                <option value="">Loại nhà đất</option>
-                                <option value="1">Tất cả nhà đất</option>
-                                <option value="2">Căn hộ chung cư</option>
-                                <option value="3">Nhà riêng</option>
-                            </select>
-                            <select
-                                name="rangePrice"
-                                value={form.rangePrice}
-                                onChange={handleChange}
-                                className="flex-1 border px-2 py-2 rounded-lg"
-                            >
-                                <option value="">Mức giá</option>
-                                <option value="2">Dưới 500 triệu</option>
-                                <option value="5">1 - 2 tỷ</option>
-                            </select>
-                            <select
-                                name="sqmtRange"
-                                value={form.sqmtRange}
-                                onChange={handleChange}
-                                className="flex-1 border px-2 py-2 rounded-lg"
-                            >
-                                <option value="">Diện tích</option>
-                                <option value="2">Dưới 30m²</option>
-                                <option value="5">80 - 100m²</option>
-                            </select>
-                        </div>
-
-                        <div className="text-right">
-                            <Button
+                        {/* Nút Tìm kiếm chi tiết (Ẩn nút submit cũ) */}
+                        <div className="text-right mt-6">
+                            <button
                                 type="submit"
-                                className="px-6 py-2 bg-blue-600 text-white rounded-lg"
+                                onClick={handleSubmit}
+                                className="px-8 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition duration-200"
                             >
-                                Tìm kiếm
-                            </Button>
+                                Áp dụng Bộ lọc
+                            </button>
                         </div>
-                    </form>
+                    </div>
                 )}
             </div>
         </div>

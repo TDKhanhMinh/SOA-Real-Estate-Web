@@ -297,9 +297,9 @@ public class ListingServiceImpl implements ListingService{
                 .and(hasRealtorId(userId));
 
         // Loại bỏ SOLD và RENTED
-        spec = spec.and((root, query, cb) ->
-                cb.not(root.get("status").in(Property.Status.SOLD, Property.Status.RENTED))
-        );
+//        spec = spec.and((root, query, cb) ->
+//                cb.not(root.get("status").in(Property.Status.SOLD, Property.Status.RENTED))
+//        );
 
         // Filter theo Status (nếu có gửi lên)
         if (status != null) {

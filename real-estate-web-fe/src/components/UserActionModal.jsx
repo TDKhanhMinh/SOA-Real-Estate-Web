@@ -38,11 +38,7 @@ export const UserActionsModal = ({ isOpen, userId, onClose }) => {
                         <BsX />
                     </button>
                 </div>
-
-
                 <hr className="my-4" />
-
-
                 <div className="flex flex-col gap-3">
                     <InfoModal userId={userId} />
                     <HistoryModal userId={userId} />

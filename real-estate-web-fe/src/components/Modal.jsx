@@ -2,7 +2,7 @@ import React from 'react';
 import { BsX } from 'react-icons/bs';
 
 
-export const Modal = ({ isOpen, onClose, title, children }) => {
+export const Modal = ({ isOpen, onClose, title, children, className }) => {
     if (!isOpen) {
         return null;
     }
@@ -14,15 +14,13 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
     };
 
     return (
-       
+
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300"
             onClick={handleOverlayClick}
         >
-            
-            <div className="relative w-full max-w-lg transform rounded-lg bg-white shadow-xl transition-all duration-300">
 
-                
+            <div className={`relative w-full  transform rounded-lg bg-white shadow-xl transition-all duration-300 ${className ? className : "max-w-lg"}`}>
                 <div className="flex items-center justify-between border-b border-gray-200 p-5">
                     <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
                     <button
@@ -34,12 +32,12 @@ export const Modal = ({ isOpen, onClose, title, children }) => {
                     </button>
                 </div>
 
-                
+
                 <div className="p-6">
                     {children}
                 </div>
 
-                
+
                 <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 text-right">
                     <button
                         onClick={onClose}

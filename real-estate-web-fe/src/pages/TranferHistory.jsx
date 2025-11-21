@@ -10,18 +10,12 @@ import PropertyActionsDropdown from "../components/PropertyActionsDropdown";
 
 const STATUS_TABS = [
     { code: "ALL", label: "Tất cả" },
-    { code: "DRAFT", label: "Bản nháp" },
-    { code: "PENDING_APPROVAL", label: "Chờ duyệt" },
-    { code: "AVAILABLE", label: "Đang hiển thị" },
     { code: "SOLD", label: "Đã bán" },
     { code: "RENTED", label: "Đã cho thuê" },
-    { code: "EXPIRED", label: "Hết hạn" },
-    { code: "REJECTED", label: "Bị từ chối" },
-    { code: "HIDDEN", label: "Đã ẩn" },
 ];
 
 
-export default function UserListing() {
+export default function TransferHistory() {
     const [properties, setProperties] = useState({ content: [] });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -39,7 +33,7 @@ export default function UserListing() {
 
             const statusParam = statusFilter === "ALL" ? null : statusFilter;
 
-            const response = await listingService.getUserListing(statusParam, page, 10);
+            const response = await listingService.transferHistoryListing(statusParam, page, 10);
 
             setProperties(response.data || { content: [] });
             setTotalPages(response.data?.totalPages || 0);
@@ -148,14 +142,6 @@ export default function UserListing() {
     return (
         <div className="w-full bg-gray-50 min-h-screen p-6">
             <div className="bg-white shadow-xl rounded-xl p-6">
-                <div className="flex justify-between items-center mb-6 border-b pb-4">
-                    <h3 className="text-2xl font-bold text-gray-800">Quản lý tin đăng</h3>
-                    <Button href="/post" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                        + Đăng tin mới
-                    </Button>
-                </div>
-
-
                 <div className="flex flex-wrap gap-2 mb-6 border-b pb-3">
                     {STATUS_TABS.map((tab) => (
                         <button
