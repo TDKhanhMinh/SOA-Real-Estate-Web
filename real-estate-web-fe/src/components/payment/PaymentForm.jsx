@@ -49,8 +49,10 @@ export const PaymentForm = ({ paymentMethod }) => {
                 await transactionService.createTransaction({ amount: total, email: user.email, userName: user.name, paymentMethod });
                 if (paymentMethod === 'vnpay') {
                     navigate("/account/vnpay", { state: total })
+                    window.location.reload(true);
                 } else {
                     navigate("/account/momo", { state: total })
+                    window.location.reload(true);
                 }
             } catch (error) {
                 if (error.response && error.response.data && error.response.data.message) {

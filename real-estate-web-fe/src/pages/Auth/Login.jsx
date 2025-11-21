@@ -39,9 +39,9 @@ export default function Login() {
       toast.success("Đăng nhập thành công!")
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
-        toast.error(error.response.data.message);
+        toast.error("Tài khoản hoặc mật khẩu không chính xác");
       } else {
-        toast.error(error.message);
+        toast.error(error.response.data.message);
       }
     }
   };

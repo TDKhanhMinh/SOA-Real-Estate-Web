@@ -56,6 +56,7 @@ export default function Profile() {
                 }
                 await userService.updateProfile(dataUpdate);
                 await fetchProfile();
+                window.location.reload(true);
             } catch (error) {
                 console.error("Lỗi tải ảnh lên:", error);
             }

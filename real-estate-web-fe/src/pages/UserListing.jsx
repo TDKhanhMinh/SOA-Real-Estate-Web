@@ -150,7 +150,7 @@ export default function UserListing() {
             <div className="bg-white shadow-xl rounded-xl p-6">
                 <div className="flex justify-between items-center mb-6 border-b pb-4">
                     <h3 className="text-2xl font-bold text-gray-800">Quản lý tin đăng</h3>
-                    <Button href="/post" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <Button href="/account/post" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                         + Đăng tin mới
                     </Button>
                 </div>

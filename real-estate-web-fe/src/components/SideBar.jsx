@@ -23,7 +23,7 @@ const menuSections = [
         title: "Quản lý bài đăng",
         icon: <HiOutlineClipboardList className="w-5 h-5" />,
         links: [
-            { name: "Đăng mới", to: "/post", icon: <HiOutlinePlusCircle className="w-5 h-5" /> },
+            { name: "Đăng mới", to: "/account/post", icon: <HiOutlinePlusCircle className="w-5 h-5" /> },
             { name: "Tin của bạn", to: "/account/listing", icon: <HiOutlineClipboardCheck className="w-5 h-5" /> },
         ]
     },
@@ -49,8 +49,8 @@ const menuSections = [
         title: "Hướng dẫn",
         icon: <HiOutlineBookOpen className="w-5 h-5" />,
         links: [
-            { name: "Hướng dẫn sử dụng", to: "/help/usage", icon: null }, // Thêm 'to'
-            { name: "Hướng dẫn thanh toán", to: "/help/payment", icon: null }, // Thêm 'to'
+            { name: "Hướng dẫn sử dụng", to: "/account/instructions", icon: null },
+            { name: "Hướng dẫn thanh toán", to: "/account/payment-instructions", icon: null },
         ]
     }
 ];
@@ -77,6 +77,7 @@ export default function Sidebar() {
                 console.error("Failed to fetch wallet:", err);
             }
         };
+
         const fetchProfile = async () => {
             try {
                 const data = await userService.getProfile();
@@ -90,7 +91,31 @@ export default function Sidebar() {
         loadUserFromStorage();
         fetchUserWallet()
     }, []);
+    useEffect(() => {
+        if (!user || !user.id) {
+            console.warn("Không tìm thấy User ID. Dừng fetch wallet.");
+            return;
+        }
 
+        const fetchUserWallet = async () => {
+            try {
+                const response = await transactionService.getUserWalletByUser(user.id);
+                console.log("User wallet fetched:", response);
+                setWallet(response);
+            } catch (err) {
+                console.error("Lỗi khi tải ví:", err);
+            }
+        };
+
+        fetchUserWallet();
+
+        const intervalId = setInterval(fetchUserWallet, 5000);
+
+        return () => {
+            clearInterval(intervalId);
+        };
+
+    }, [setWallet]);
     const copyToClipboard = () => {
         navigator.clipboard.writeText(user.paymentCode);
         setIsCopied(true);

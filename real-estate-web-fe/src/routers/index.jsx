@@ -1,5 +1,5 @@
 
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import MainLayout from "../layout/MainLayout";
 import Login from './../pages/Auth/Login';
@@ -29,117 +29,90 @@ import MomoPayment from "../pages/Payment/MomoPayment";
 import VnPayPayment from "../pages/Payment/VnPayPayment";
 import PaymentHistory from "../pages/Payment/PaymentHistory";
 import TransferHistory from "../pages/TranferHistory";
+import AuthGuard from "../components/AuthGuard";
+import AdminGuard from "../components/AdminGuard";
+import NotFoundPage from "../pages/NotFoundPage";
+import PaymentInstructionsPage from "../pages/PaymentInstructionsPage";
+import InstructionsPage from "../pages/InstructionsPage";
 
 
 const publicRoutes = createBrowserRouter([
     {
         element: <MainLayout />,
         children: [
-            {
-                path: '/', element: <Home />
-            },
-
-            {
-                path: '/post', element: <Post />
-            },
-            {
-                path: '/info/:id?', element: <ListingInfo />
-            },
-
-            {
-                path: '/search-result', element: <SearchResult />
-            },
-
+            { path: '/', element: <Home /> },
+            { path: '/info/:id?', element: <ListingInfo /> },
+            { path: '/search-result', element: <SearchResult /> },
+            { path: '/support', element: <SupportCenter /> },
         ],
-    }, {
-        element: <AccountLayout />,
-        path: '/account',
+    },
+
+    {
+        element: <AuthGuard />,
         children: [
             {
-                path: 'change-password', element: <ChangePassword />
+                element: <AccountLayout />,
+                path: '/account',
+                children: [
+                    { path: 'post', element: <Post /> },
+                    { path: 'change-password', element: <ChangePassword /> },
+                    { path: 'listing', element: <UserListing /> },
+                    { path: 'membership', element: <Membership /> },
+                    { path: 'profile', element: <Profile /> },
+                    { path: 'support', element: <SupportCenter /> },
+                    { path: 'my-subscription', element: <MySubscription /> },
+                    { path: 'payment', element: <Payment /> },
+                    { path: 'payment-instructions', element: <PaymentInstructionsPage /> },
+                    { path: 'instructions', element: <InstructionsPage /> },
+                    { path: 'history', element: <TransferHistory /> },
+                    { path: 'payment-history', element: <PaymentHistory /> },
+                    { path: 'momo', element: <MomoPayment /> },
+                    { path: 'vnpay', element: <VnPayPayment /> },
+                ],
             },
-            {
-                path: 'listing', element: <UserListing />
-            },
-            {
-                path: 'membership', element: <Membership />
-            },
-            {
-                path: 'profile', element: <Profile />
-            },
-            {
-                path: 'support', element: <SupportCenter />
-            },
-            {
-                path: 'my-subscription', element: <MySubscription />
-            },
-            {
-                path: 'payment', element: <Payment />
-            },
-            {
-                path: 'history', element: <TransferHistory />
-            },
-            {
-                path: 'payment-history', element: <PaymentHistory />
-            },
-            {
-                path: 'momo', element: <MomoPayment />
-            },
-            {
-                path: 'vnpay', element: <VnPayPayment />
-            },
-
         ],
-    }
-    , {
-        element: <AdminLayout />,
-        path: '/admin',
+    },
+
+    {
+        element: <AdminGuard />,
         children: [
             {
-                path: 'dashboard', element: <Dashboard />
+                element: <AdminLayout />,
+                path: '/admin',
+                children: [
+                    { index: true, element: <Dashboard /> },
+                    { path: 'dashboard', element: <Dashboard /> },
+                    { path: 'users', element: <Users /> },
+                    { path: 'listings', element: <Listings /> },
+                    { path: 'payments', element: <Payments /> },
+                    { path: 'memberships', element: <MembershipManagement /> },
+                ],
             },
-            {
-                path: 'users', element: <Users />
-            },
-            {
-                path: 'listings', element: <Listings />
-            },
-            {
-                path: 'payments', element: <Payments />
-            },
-            {
-                path: 'memberships', element: <MembershipManagement />
-            },
-
-
-
         ],
-    }, {
+    },
+
+    {
         element: <AuthLayout />,
         children: [
-            {
-                path: '/login', element: <Login />
-            },
-            {
-                path: '/register', element: <Register />
-            },
-            {
-                path: '/forgot-password', element: <ForgotPassword />
-            },
-            {
-                path: '/otp-verification', element: <OtpVerification />
-            },
-            {
-                path: '/reset-password', element: <ResetPassword />
-            },
-
-
-
-
+            { path: '/login', element: <Login /> },
+            { path: '/register', element: <Register /> },
+            { path: '/forgot-password', element: <ForgotPassword /> },
+            { path: '/otp-verification', element: <OtpVerification /> },
+            { path: '/reset-password', element: <ResetPassword /> },
         ],
+    },
+
+    {
+        path: '/404',
+        element: <NotFoundPage />
+    },
+
+    {
+        path: '*',
+        element: <Navigate to="/404" replace />
     }
+]);
 
-])
-const privateRoutes = []
+const privateRoutes = [];
 
-export { publicRoutes, privateRoutes }
+export { publicRoutes, privateRoutes };

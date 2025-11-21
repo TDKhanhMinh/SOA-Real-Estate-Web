@@ -18,12 +18,15 @@ const navItems = [
 export default function Header() {
   const isLogin = getToken() ? true : false
   const [user, setUser] = useState();
+
+
   useEffect(() => {
     if (isLogin) {
       const u = getUser();
       setUser(u);
     }
   }, [isLogin]);
+
   return (
     <header className="h-20 w-full fixed z-50 bg-white flex items-center justify-between shadow-lg">
       <div className="flex items-center ml-4">
@@ -66,7 +69,7 @@ export default function Header() {
                 <DropDownMenu items={ACCOUNT_ITEMS} className={"flex flex-col"} classNameBtn={"text-sm text-gray-950  lowercase font-normal capitalize hover:text-green-700"}>
                   <div className="flex items-center">
                     <div>
-                      <img src={user?.avatarUrl || "https://th.bing.com/th/id/R.e764fc1c705687a6f4770ac6ead4a955?rik=Ik0ulhYQHntUPg&pid=ImgRaw&r=0"} alt="avatar" className="w-14 h-10 rounded-full" />
+                      <img src={user?.avatarUrl || "https://th.bing.com/th/id/R.e764fc1c705687a6f4770ac6ead4a955?rik=Ik0ulhYQHntUPg&pid=ImgRaw&r=0"} alt="avatar" className="w-10 h-10 rounded-full" />
                     </div>
                     {user?.name || "User"}
                     <FaChevronDown className="mx-2" />
@@ -77,7 +80,7 @@ export default function Header() {
 
         </div>
         <Button
-          to="/post"
+          to={"/account/post"}
           className="px-4 border rounded-full hover:bg-gray-200 bg-transparent"
           title="Đăng tin"
         />

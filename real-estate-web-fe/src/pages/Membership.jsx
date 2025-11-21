@@ -17,10 +17,14 @@ export default function Membership() {
         try {
             await subscriptionService.buySubscriptions(selectedSubscription.id);
             setShowModal(false)
+            window.location.reload(true);
             toast.success("Bạn đã đặt mua gói hội viên thành công")
         } catch (error) {
-            toast.error(error)
-
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error(error.message);
+            }
         }
     }
     useEffect(() => {

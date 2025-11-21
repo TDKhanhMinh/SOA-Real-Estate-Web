@@ -23,12 +23,37 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     let errs = {};
-    if (!formData.name) errs.name = "Full name is required";
-    if (!formData.email) errs.email = "Email is required";
-    if (!formData.phone) errs.phone = "Phone number is required";
-    if (!formData.password) errs.password = "Password is required";
-    if (formData.password !== formData.confirmPassword)
-      errs.confirmPassword = "Passwords do not match";
+
+    if (!formData.name) {
+      errs.name = "Tên đầy đủ là bắt buộc";
+    } else if (formData.name.length < 3) {
+      errs.name = "Tên phải có ít nhất 3 ký tự";
+    }
+
+    if (!formData.email) {
+      errs.email = "Email là bắt buộc";
+    } else if (formData.email.length > 100) {
+      errs.email = "Email không được quá 100 ký tự";
+    }
+
+    const phoneRegex = /^(\+84|0)(3|5|7|8|9)[0-9]{8}$/;
+    if (!formData.phone) {
+      errs.phone = "Số điện thoại là bắt buộc";
+    } else if (formData.phone.length !== 10) {
+      errs.phone = "Số điện thoại phải có đúng 10 chữ số";
+    } else if (!phoneRegex.test(formData.phone)) {
+      errs.phone = "Số điện thoại không hợp lệ (ví dụ: 0912345678)";
+    }
+
+    if (!formData.password) {
+      errs.password = "Mật khẩu là bắt buộc";
+    } else if (formData.password.length < 8 || formData.password.length > 20) {
+      errs.password = "Mật khẩu phải từ 8 đến 20 ký tự";
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      errs.confirmPassword = "Mật khẩu xác nhận không khớp";
+    }
 
     setError(errs);
     if (Object.keys(errs).length === 0) {
@@ -42,10 +67,17 @@ export default function Register() {
         toast.success("Đăng ký thành công!");
         navigate("/login");
       } catch (error) {
-        if (error.response && error.response.data && error.response.data.message) {
-          toast.error(error.response.data.message);
+        const errorData = error.response?.data;
+
+        if (errorData) {
+          if (errorData.errors) {
+            setError(errorData.errors);
+            toast.error("Vui lòng kiểm tra lại thông tin đăng ký");
+          } else if (errorData.message) {
+            toast.error(errorData.message);
+          }
         } else {
-          toast.error(error.message);
+          toast.error("Đăng ký thất bại: " + error.message);
         }
       }
 
