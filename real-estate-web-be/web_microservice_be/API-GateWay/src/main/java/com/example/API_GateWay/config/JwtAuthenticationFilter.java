@@ -25,14 +25,16 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     }
 
     public static final List<String> PUBLIC_PATHS = List.of(
-            "/user/register",
-            "/user/login",
-            "/user/forgot-password",
-            "/user/reset-password",
-            "/user/verify-otp",
-            "/subscription/",
-            "/listing/public",
-            "/listing/public/"
+            "^/user/register$",
+            "^/user/login$",
+            "^/user/forgot-password$",
+            "^/user/reset-password$",
+            "^/user/verify-otp$",
+
+            "^/listing/public.*$",
+
+            "^/subscription/?$",
+            "^/subscription/\\d+$"
     );
 
     @Override
@@ -42,7 +44,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             // Kiểm tra nếu đường dẫn là public thì không cần xác thực
             String path = exchange.getRequest().getURI().getPath();
             boolean isPublic = PUBLIC_PATHS.stream()
-                    .anyMatch(path::equals);
+                    .anyMatch(path::matches);
 
             if (isPublic) {
                 return chain.filter(exchange); // Nếu public, cho đi tiếp, không check token
