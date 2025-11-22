@@ -141,6 +141,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     // Lấy thông tin/benefit của một gói subscription CỤ THỂ
     @Override
+    @Transactional
     public SubscriptionDTO getSubscriptionDetails(Long subscriptionId) {
         Subscription subscription = subscriptionRepository.findByIdAndIsActive(subscriptionId, true)
                 .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_NOT_FOUND));
