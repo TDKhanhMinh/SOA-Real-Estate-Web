@@ -18,7 +18,7 @@ export default function Membership() {
             await subscriptionService.buySubscriptions(selectedSubscription.id);
             setShowModal(false)
             window.location.reload(true);
-            toast.success("Bạn đã đặt mua gói hội viên thành công")
+            localStorage.setItem('purchaseSuccess', 'true');
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
                 toast.error(error.response.data.message);
@@ -28,6 +28,12 @@ export default function Membership() {
         }
     }
     useEffect(() => {
+        const isSuccess = localStorage.getItem('purchaseSuccess');
+
+        if (isSuccess === 'true') {
+            toast.success("Bạn đã đặt mua gói hội viên thành công");
+            localStorage.removeItem('purchaseSuccess');
+        }
         fetchSubscriptions();
     }, []);
     const fetchSubscriptions = async () => {

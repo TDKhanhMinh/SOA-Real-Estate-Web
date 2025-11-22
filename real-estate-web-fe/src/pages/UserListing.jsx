@@ -100,7 +100,6 @@ export default function UserListing() {
     const handleRentedListing = async (id) => {
         try {
             await listingService.hasRentedListing(id);
-            console.log("rented", await listingService.hasRentedListing(id));
             toast.success("Thao tác thành công");
             fetchUserListings(selectedStatus);
         } catch (error) {

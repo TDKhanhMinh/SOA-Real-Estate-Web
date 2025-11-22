@@ -32,6 +32,10 @@ export const subscriptionService = {
         const res = await http.get("subscription/user/");
         return res.data.data;
     },
+    getUserSubscriptionsHistory: async () => {
+        const res = await http.get("subscription/user/history");
+        return res.data.data;
+    },
     updateSubscriptions: async (id, data) => {
         const res = await http.put(`subscription/admin/${id}`, data);
         return res.data.data;

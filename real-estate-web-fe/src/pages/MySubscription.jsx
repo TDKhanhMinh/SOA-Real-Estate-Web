@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subscriptionService } from '../services/subscriptionService';
-import { transactionService } from '../services/transactionService';
 
 import {
     BsInfoCircleFill,
@@ -69,24 +68,9 @@ export default function MySubscription() {
     const [historyError, setHistoryError] = useState(null);
     const [historyPageNum, setHistoryPageNum] = useState(0);
     const [historyPageSize] = useState(5);
-    const [plans, setPlans] = useState([]);
 
-    const renderSubscriptionName = (id) => {
-        const subs = plans.find(subs => subs.id === id);
-        console.log("sub buy name", subs);
-        return subs?.name || "N/A";
-    }; useEffect(() => {
-        fetchSubscriptions();
-    }, []);
-    const fetchSubscriptions = async () => {
-        try {
-            const res = await subscriptionService.getSubscriptionsByUser();
-            const activePlans = res.filter(plan => plan.isActive);
-            setPlans(activePlans);
-        } catch (error) {
-            console.error("Failed to fetch subscriptions:", error);
-        }
-    };
+
+
     const fetchMySubscription = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -115,15 +99,9 @@ export default function MySubscription() {
         setHistoryLoading(true);
         setHistoryError(null);
 
-        const params = {
-            page: historyPageNum,
-            size: historyPageSize,
-            sort: 'purchasedAt,desc'
-        };
-
         try {
-            const response = await transactionService.getTransactionSubscription(params);
-            console.info("subsss", response);
+            const response = await subscriptionService.getUserSubscriptionsHistory();
+            console.info("subs his", response);
             setHistoryPage(response);
         } catch (err) {
             console.error("Lỗi khi tải lịch sử hội viên:", err);
@@ -453,10 +431,10 @@ export default function MySubscription() {
                         {historyPage.content.map((item) => (
                             <tr key={item.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                    {item ? renderSubscriptionName(item.id) : 'N/A'}
+                                    {item.subscriptionName || 'N/A'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {formatDateTime(item.createdAt)}
+                                    {formatDateTime(item.updatedAt)}
                                 </td>
                                 {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {formatDateTime(item.updatedAt)}

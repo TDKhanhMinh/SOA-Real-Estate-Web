@@ -111,7 +111,7 @@ export default function Post() {
         }
     };
     return (
-        <div className="max-w-5xl mx-auto p-6 mt-20">
+        <div className="w-full mx-auto p-6 mt-20">
             <div className="flex justify-between items-center mb-3">
                 <h2 className="text-2xl font-bold text-start mb-6">
                     Tạo bài đăng

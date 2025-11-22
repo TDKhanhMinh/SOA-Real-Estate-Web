@@ -35,7 +35,7 @@ export function ListingHistoryModal({ userId }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await listingService.getUserAllUserListingByAdmin(userId)
+            const res = await listingService.getUserAllUserListingByAdmin(userId);
             setHistory(res.data || []);
             console.log("lis data", await listingService.getUserAllUserListingByAdmin(userId));
 
@@ -122,7 +122,7 @@ export function ListingHistoryModal({ userId }) {
 
 
                                                 <div className="col-span-2">
-                                                    <span className="font-semibold">Trạng thái:</span> {getStatusLabel(p.status)}
+                                                    <span className="font-semibold">Trạng thái:</span> {getStatusLabel(p.status)}-{p.isDeleted ? "ĐÃ XÓA" : ""}
                                                 </div>
 
                                                 <div className="col-span-full">

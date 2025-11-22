@@ -310,7 +310,7 @@ public class ListingController {
             @PathVariable Long userId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Property.Status status,
-            @RequestParam(defaultValue = "false") boolean includeDeleted,
+            @RequestParam(defaultValue = "true") boolean includeDeleted,
             @PageableDefault(page = 0, size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         Page<PropertyResponse> page = listingService.getUserListingsByAdmin(

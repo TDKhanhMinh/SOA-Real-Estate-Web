@@ -26,18 +26,25 @@ const PropertyActionsDropdown = ({
         };
     }, [dropdownRef]);
 
+    // Hàm tiện ích để xử lý click chung cho các nút
+    const handleActionClick = (e, actionCallback) => {
+        e.preventDefault();
+        e.stopPropagation(); // <--- QUAN TRỌNG: Chặn sự kiện lan ra ngoài
+        actionCallback();
+        setIsOpen(false);
+    };
 
-    // CSS chung cho các nút trong menu
-    // *Đã thay đổi: Loại bỏ w-full khỏi actionButtonClass và thêm vào trong JSX button*
     const actionButtonBaseClass = "text-left px-4 py-2 text-xs font-semibold rounded-md transition duration-150";
 
     return (
         <div className="relative inline-block text-left" ref={dropdownRef}>
-
             <div>
                 <button
                     type="button"
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={(e) => {
+                        e.stopPropagation(); // Chặn click nút mở menu lan ra ngoài
+                        setIsOpen(!isOpen);
+                    }}
                     className="p-2 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                     aria-expanded={isOpen}
                     aria-haspopup="true"
@@ -50,18 +57,12 @@ const PropertyActionsDropdown = ({
                 <div
                     className="absolute right-0 mt-2 w-48 origin-top-right bg-white border border-gray-200 rounded-lg shadow-xl z-20"
                     role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="menu-button"
                 >
                     <div className="p-1 flex flex-col space-y-1">
 
                         {p.status === "DRAFT" && (
                             <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handlePostListing(p.id);
-                                    setIsOpen(false);
-                                }}
+                                onClick={(e) => handleActionClick(e, () => handlePostListing(p.id))}
                                 className={`${actionButtonBaseClass} w-full text-green-700 hover:bg-green-50`}
                                 role="menuitem"
                             >
@@ -71,13 +72,11 @@ const PropertyActionsDropdown = ({
 
                         {p.status === "AVAILABLE" && (
                             <button
-                                onClick={(e) => {
-                                    e.preventDefault();
+                                onClick={(e) => handleActionClick(e, () => {
                                     p.propertyTransactionType === "SALE"
                                         ? handleSoldListing(p.id)
                                         : handleRentedListing(p.id);
-                                    setIsOpen(false);
-                                }}
+                                })}
                                 className={`${actionButtonBaseClass} w-full text-green-700 hover:bg-green-50`}
                                 role="menuitem"
                             >
@@ -86,37 +85,28 @@ const PropertyActionsDropdown = ({
                         )}
 
                         <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleEdit(p);
-                                setIsOpen(false);
-                            }}
+                            onClick={(e) => handleActionClick(e, () => handleEdit(p))}
                             className={`${actionButtonBaseClass} w-full text-blue-700 hover:bg-blue-50`}
                             role="menuitem"
                         >
                             Chỉnh sửa
                         </button>
 
-                        {p.status === "SOLD" || p.status === "RENTED" &&
+                        {!["SOLD", "RENTED"].includes(p.status) && (
                             <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleHidden(p.id);
-                                    setIsOpen(false);
-                                }}
-                                className={`${actionButtonBaseClass} w-full ${p.status === "HIDDEN" ? "text-yellow-700 hover:bg-yellow-50" : "text-gray-700 hover:bg-gray-50"}`}
+                                onClick={(e) => handleActionClick(e, () => handleHidden(p.id))}
+                                className={`${actionButtonBaseClass} w-full ${p.status === "HIDDEN"
+                                    ? "text-yellow-700 hover:bg-yellow-50"
+                                    : "text-gray-700 hover:bg-gray-50"
+                                    }`}
                                 role="menuitem"
                             >
                                 {p.status === "HIDDEN" ? "Hiển thị" : "Ẩn bài"}
                             </button>
-                        }
+                        )}
 
                         <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleSelectedDelete(p);
-                                setIsOpen(false);
-                            }}
+                            onClick={(e) => handleActionClick(e, () => handleSelectedDelete(p))}
                             className={`${actionButtonBaseClass} w-full text-red-600 hover:bg-red-50`}
                             role="menuitem"
                         >
