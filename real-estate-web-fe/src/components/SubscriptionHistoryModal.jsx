@@ -188,7 +188,9 @@ export function SubscriptionHistoryModal({ userId }) {
                         </div>
                     )}
 
-                    {renderContent()}
+                    <div className="max-h-[70vh] overflow-y-auto pr-2">
+                        {renderContent()}
+                    </div>
                 </div>
             </Modal>
         </>
