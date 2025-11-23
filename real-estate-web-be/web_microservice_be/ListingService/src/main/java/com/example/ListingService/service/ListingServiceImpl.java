@@ -216,7 +216,9 @@ public class ListingServiceImpl implements ListingService{
                 property.getStatus() == Property.Status.PENDING_APPROVAL ||
                 property.getStatus() == Property.Status.HIDDEN ||
                 property.getStatus() == Property.Status.SOLD ||
-                property.getStatus() == Property.Status.RENTED) {
+                property.getStatus() == Property.Status.RENTED ||
+                property.getStatus() == Property.Status.EXPIRED ||
+                property.getStatus() == Property.Status.REJECTED) {
 
             property.setStatus(Property.Status.DRAFT);
             log.info("Bài đăng {} đã cập nhật nội dung -> Chuyển về DRAFT.", propertyId);
