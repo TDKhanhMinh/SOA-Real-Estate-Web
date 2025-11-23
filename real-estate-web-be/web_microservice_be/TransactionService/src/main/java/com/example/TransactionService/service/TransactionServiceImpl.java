@@ -98,7 +98,6 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("Đã tạo giao dịch PENDING: {}", transaction.getId());
 
         // 3. === GIẢ LẬP THANH TOÁN THÀNH CÔNG ===
-        // (Trong thực tế, đây là lúc gọi API thanh toán và chờ callback)
 
         // 4. Cập nhật số dư ví
         userWallet.setBalance(userWallet.getBalance() + topUpRequest.amount());

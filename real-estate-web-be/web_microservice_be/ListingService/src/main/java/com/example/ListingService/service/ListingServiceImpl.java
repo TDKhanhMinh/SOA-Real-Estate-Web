@@ -555,9 +555,7 @@ public class ListingServiceImpl implements ListingService{
 
     private UserSubscriptionDetailsDTO callSubscriptionService(Long userId) {
         try {
-            // URL endpoint bên Subscription: /subscription/user/{userId} (Admin view) hoặc /subscription/user/ (Current user)
-            // Ở đây ta dùng endpoint của Admin để lấy chi tiết đầy đủ: /subscription/admin/user/{userId}
-            // Hoặc endpoint /subscription/user/{userId} mà Admin Controller đang expose.
+            // Dùng endpoint của user để lấy chi tiết đầy đủ: /subscription/user/{userId}
 
             String uri = "/subscription/user/" + userId;
 

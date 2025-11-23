@@ -279,7 +279,6 @@ public class ListingController {
             @RequestParam(defaultValue = "false") boolean includeDeleted,
             @PageableDefault(page = 0, size = 20, sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        // Gọi Service với userId = null (để lấy tất cả)
         Page<PropertyResponse> page = listingService.getUserListingsByAdmin(
                 null, search, status, includeDeleted, pageable);
 
@@ -383,8 +382,8 @@ public class ListingController {
             @RequestParam(required = false) Double maxPrice,
             @PageableDefault(page = 0, size = 20, sort = {"priority", "updatedAt"}, direction = Sort.Direction.ASC) Pageable pageable) {
 
-        // Lưu ý: Direction ASC ở trên sẽ áp dụng cho cả 2 nếu không chỉ rõ.
-        // Tuy nhiên, client có thể ghi đè bằng query param: ?sort=priority,asc&sort=updatedAt,desc
+        // Default priority asc, updatedAt asc
+        // Có thể tùy chỉnh ví dụ: &sort=priority,asc&sort=updatedAt,desc
 
         Page<PropertyResponse> page = listingService.getPublicListings(search, transactionType, propertyType, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy danh sách thành công", page));
