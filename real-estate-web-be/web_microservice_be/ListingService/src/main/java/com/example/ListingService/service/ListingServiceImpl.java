@@ -216,7 +216,9 @@ public class ListingServiceImpl implements ListingService{
                 property.getStatus() == Property.Status.PENDING_APPROVAL ||
                 property.getStatus() == Property.Status.HIDDEN ||
                 property.getStatus() == Property.Status.SOLD ||
-                property.getStatus() == Property.Status.RENTED) {
+                property.getStatus() == Property.Status.RENTED ||
+                property.getStatus() == Property.Status.EXPIRED ||
+                property.getStatus() == Property.Status.REJECTED) {
 
             property.setStatus(Property.Status.DRAFT);
             log.info("Bài đăng {} đã cập nhật nội dung -> Chuyển về DRAFT.", propertyId);
@@ -555,9 +557,7 @@ public class ListingServiceImpl implements ListingService{
 
     private UserSubscriptionDetailsDTO callSubscriptionService(Long userId) {
         try {
-            // URL endpoint bên Subscription: /subscription/user/{userId} (Admin view) hoặc /subscription/user/ (Current user)
-            // Ở đây ta dùng endpoint của Admin để lấy chi tiết đầy đủ: /subscription/admin/user/{userId}
-            // Hoặc endpoint /subscription/user/{userId} mà Admin Controller đang expose.
+            // Dùng endpoint của user để lấy chi tiết đầy đủ: /subscription/user/{userId}
 
             String uri = "/subscription/user/" + userId;
 
