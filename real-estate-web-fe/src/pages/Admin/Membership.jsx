@@ -51,14 +51,6 @@ export default function MembershipManagement() {
         setShowModal(true);
     };
 
-    const handleDelete = (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa gói này?')) {
-            setSubscriptions((prev) => prev.filter((sub) => sub.id !== id));
-            // Cần gọi API xóa ở đây
-        }
-    };
-
-
     const handleCloseModal = () => {
         setShowModal(false);
         setEditingSubscription(null);
@@ -204,13 +196,7 @@ export default function MembershipManagement() {
                                                     >
                                                         <HiMiniPencil className="h-5 w-5" />
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDelete(sub.id)}
-                                                        className="text-red-600 hover:text-red-800 transition-colors p-1"
-                                                        title="Xóa"
-                                                    >
-                                                        <HiMiniTrash className="h-5 w-5" />
-                                                    </button>
+                                                    
                                                 </div>
                                             </td>
                                         </tr>

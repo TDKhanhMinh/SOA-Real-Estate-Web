@@ -272,7 +272,7 @@ export default function MySubscription() {
                                         <p className="text-sm font-medium text-blue-100">Còn lại</p>
                                     </div>
                                     <p className="text-xl font-bold">
-                                        {daysRemaining || (details.duration)} ngày
+                                        {Math.floor((new Date(sub.endDate) - new Date(sub.startDate)) / (1000 * 60 * 60 * 24))} ngày
                                     </p>
                                 </div>
                             </div>
