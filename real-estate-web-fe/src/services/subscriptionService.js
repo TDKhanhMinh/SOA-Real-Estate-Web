@@ -60,7 +60,7 @@ export const subscriptionService = {
         return res.data.data;
     },
     getUserSubscriptionsRevenue: async (data) => {
-        const res = await http.get("subscription/admin/stats/revenue", data);
+        const res = await http.get("subscription/admin/stats/revenue", { params: data });
         return res.data.data;
     },
     getUserPerSubscriptions: async () => {

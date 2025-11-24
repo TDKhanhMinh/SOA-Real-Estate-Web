@@ -33,8 +33,8 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function Dashboard() {
     const [dateRange, setDateRange] = useState({
-        startDate: formatDate(new Date(new Date().setDate(new Date().getDate() - 30))),
-        endDate: formatDate(new Date())
+        startDate: null,
+        endDate: null
     });
 
     const [revenueData, setRevenueData] = useState([]);
@@ -179,7 +179,7 @@ export default function Dashboard() {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                                 <XAxis
-                                    dataKey="date" // ĐÃ ĐỔI TỪ 'period' SANG 'date'
+                                    dataKey="date"
                                     stroke="#9CA3AF"
                                     fontSize={12}
                                     tickLine={false}
